@@ -32,5 +32,4 @@ db.sqlite3
 .pytest_cache/
 
 # Environment variables
-.env
-.venv
+env.py
