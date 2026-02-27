@@ -1,3 +1,30 @@
+## Setup Instructions
+
+1. Clone the repository
+2. Create virtual environment
+3. Install dependencies
+4. **Run migrations:** `python manage.py migrate`
+5. Start server: `python manage.py runserver`
+
+## When Pulling Updates
+
+After any `git pull`, always run:
+```bash
+python manage.py migrate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # team1-Meta_Mood
 [View the Live Project here]()
 
