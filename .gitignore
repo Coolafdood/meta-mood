@@ -9,6 +9,7 @@ Thumbs.db
 .env
 .env.*
 *.key
+env.py
 
 # Python
 __pycache__/
