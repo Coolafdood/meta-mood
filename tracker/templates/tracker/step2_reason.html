@@ -1,0 +1,99 @@
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="step-indicator">
+            <div class="step">1</div>
+            <div class="step active">2</div>
+            <div class="step">3</div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Step 2: Why do you feel this way?</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" id="reasonForm">
+                    {% csrf_token %}
+                    
+                    {% for radio in form.reason %}
+                        <div class="form-check reason-option mood-{{ mood }}" onclick="handleReasonSelect(this, '{{ radio.data.value }}')">
+                            {{ radio.tag }}
+                            <label class="form-check-label w-100" for="{{ radio.id_for_label }}">
+                                {{ radio.choice_label }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                    
+                    <div id="customReasonField" style="display: none;" class="mt-3">
+                        {{ form.custom_reason.label_tag }}
+                        {{ form.custom_reason }}
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Next</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .reason-option {
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+    .reason-option:hover {
+        transform: scale(1.02);
+    }
+    .reason-option input {
+        display: none;
+    }
+    .reason-option input:checked + label {
+        font-weight: bold;
+    }
+    .reason-option label {
+        cursor: pointer;
+        margin: 0;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    .mood-1, .mood-2 { background-color: #ff6b6b; }
+    .mood-3 { background-color: #ffd93d; }
+    .mood-4, .mood-5 { background-color: #6bcf7f; }
+</style>
+
+<script>
+function handleReasonSelect(element, value) {
+    // Uncheck all other radios
+    document.querySelectorAll('input[name="reason"]').forEach(radio => {
+        radio.checked = false;
+    });
+    
+    // Check the selected radio
+    const radio = element.querySelector('input');
+    radio.checked = true;
+    
+    // Show/hide custom reason field
+    const customField = document.getElementById('customReasonField');
+    if (value === 'other') {
+        customField.style.display = 'block';
+    } else {
+        customField.style.display = 'none';
+    }
+}
+
+// Check if 'other' is selected on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const otherRadio = document.querySelector('input[value="other"]');
+    if (otherRadio && otherRadio.checked) {
+        document.getElementById('customReasonField').style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

@@ -1,6 +1,273 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from django.db.models import Count, Avg, Q
+from django.db import models
 
-# Create your views here.
-def home(request):
-    return HttpResponse("Welcome to the Mood Tracker App!")
+from .models import MoodEntry, Reason, Action
+from .forms import Step1MoodForm, Step2ReasonForm, Step3ActionForm, ActionFeedbackForm
+
+
+# Helper function for icons
+def get_category_icon(category):
+    """Return appropriate icon for each category"""
+    icons = {
+        "sleep": "😴",
+        "work": "💼",
+        "relationships": "👥",
+        "health": "❤️",
+        "weather": "☁️",
+        "achievement": "🏆",
+        "other": "📝",
+    }
+    return icons.get(category, "📊")
+
+
+# Original views (keep ALL of these)
+def index(request):
+    """Landing page with generic information"""
+    return render(request, 'tracker/index.html')
+
+
+@login_required
+def step1_mood(request):
+    """Step 1: User selects their mood"""
+    if request.method == 'POST':
+        form = Step1MoodForm(request.POST)
+        if form.is_valid():
+            # Save mood in session
+            request.session['mood'] = int(form.cleaned_data['mood'])
+            return redirect('tracker:step2_reason')
+    else:
+        form = Step1MoodForm()
+    
+    return render(request, 'tracker/step1_mood.html', {'form': form})
+
+
+@login_required
+def step2_reason(request):
+    """Step 2: User selects reason for their mood"""
+    mood = request.session.get('mood')
+    if not mood:
+        messages.error(request, "Please start from the beginning.")
+        return redirect('tracker:step1_mood')
+    
+    if request.method == 'POST':
+        form = Step2ReasonForm(request.POST, mood_value=mood)
+        if form.is_valid():
+            reason_id = form.cleaned_data.get('reason')
+            custom_reason = form.cleaned_data.get('custom_reason')
+            
+            if reason_id == 'other':
+                # Save that it's a custom reason
+                request.session['is_custom_reason'] = True
+                request.session['custom_reason_text'] = custom_reason
+            else:
+                # Save the selected reason
+                request.session['is_custom_reason'] = False
+                request.session['reason_id'] = int(reason_id)
+            
+            return redirect('tracker:step3_action')
+    else:
+        form = Step2ReasonForm(mood_value=mood)
+    
+    return render(request, 'tracker/step2_reason.html', {'form': form, 'mood': mood})
+
+
+@login_required
+def step3_action(request):
+    """Step 3: User selects an action to try"""
+    mood = request.session.get('mood')
+    reason_id = request.session.get('reason_id')
+    is_custom_reason = request.session.get('is_custom_reason', False)
+    custom_reason_text = request.session.get('custom_reason_text', '')
+    
+    if not mood:
+        messages.error(request, "Please start from the beginning.")
+        return redirect('tracker:step1_mood')
+    
+    if request.method == 'POST':
+        form = Step3ActionForm(request.POST, reason_id=reason_id, is_custom=is_custom_reason)
+        if form.is_valid():
+            action_id = form.cleaned_data.get('action')
+            custom_action = form.cleaned_data.get('custom_action')
+            
+            # Create the mood entry
+            reason = None
+            if not is_custom_reason and reason_id:
+                reason = Reason.objects.get(id=reason_id)
+            
+            action = None
+            notes = ''
+            
+            if action_id == 'custom':
+                notes = f"Custom action: {custom_action}"
+                if is_custom_reason:
+                    notes = f"Custom reason: {custom_reason_text}\n{notes}"
+            else:
+                action = Action.objects.get(id=int(action_id))
+                if is_custom_reason:
+                    notes = f"Custom reason: {custom_reason_text}"
+            
+            mood_entry = MoodEntry.objects.create(
+                user=request.user,
+                mood=mood,
+                reason=reason,
+                action=action,
+                notes=notes
+            )
+            
+            # Clear session data
+            for key in ['mood', 'reason_id', 'is_custom_reason', 'custom_reason_text']:
+                if key in request.session:
+                    del request.session[key]
+            
+            # Save the entry ID for feedback later
+            request.session['last_mood_entry_id'] = mood_entry.id
+            
+            messages.success(request, "Your mood has been recorded!")
+            return redirect('tracker:dashboard')
+    else:
+        form = Step3ActionForm(reason_id=reason_id, is_custom=is_custom_reason)
+    
+    context = {
+        'form': form,
+        'mood': mood,
+        'is_custom_reason': is_custom_reason,
+        'custom_reason_text': custom_reason_text if is_custom_reason else None,
+    }
+    return render(request, 'tracker/step3_action.html', context)
+
+
+# ENHANCED DASHBOARD VIEW (replace your old dashboard with this one)
+@login_required
+def dashboard(request):
+    """Enhanced dashboard with category statistics"""
+    # Get all entries for the user
+    entries = MoodEntry.objects.filter(user=request.user).select_related('reason', 'action')
+
+    # Get statistics by category
+    category_stats = []
+
+    # Get all categories that have at least 3 entries (for meaningful stats)
+    categories_with_data = (
+        entries.exclude(reason__isnull=True)
+        .values("reason__category")
+        .annotate(total_entries=Count("id"))
+        .filter(total_entries__gte=3)
+    )
+
+    for cat in categories_with_data:
+        category = cat["reason__category"]
+        category_entries = entries.filter(reason__category=category)
+
+        # Get reasons within this category
+        reasons_stats = (
+            category_entries.values("reason__text", "reason__mood_type")
+            .annotate(count=Count("id"), avg_mood=Avg("mood"))
+            .order_by("-count")[:5]
+        )
+
+        # Overall category stats
+        overall = category_entries.aggregate(
+            avg_mood=Avg("mood"),
+            total=Count("id"),
+            positive_count=Count("id", filter=Q(mood__gte=4)),
+        )
+
+        positive_percentage = (overall['positive_count'] / overall['total'] * 100) if overall['total'] > 0 else 0
+
+        category_stats.append({
+            "name": category,
+            "display_name": dict(Reason.CATEGORY_CHOICES).get(category, category),
+            "total_entries": overall["total"],
+            "avg_mood": round(overall["avg_mood"], 1) if overall["avg_mood"] else 0,
+            "positive_percentage": round(positive_percentage, 1),
+            "top_reasons": reasons_stats,
+            "icon": get_category_icon(category),
+        })
+
+    # Sort categories by number of entries (most active first)
+    category_stats.sort(key=lambda x: x["total_entries"], reverse=True)
+
+    # Get recent entries
+    recent_entries = entries[:10]
+
+    # Calculate overall average mood
+    overall_avg = entries.aggregate(Avg("mood"))["mood__avg"]
+    
+    # Original statistics (keep these for backward compatibility)
+    total_entries = entries.count()
+    if total_entries > 0:
+        mood_distribution = entries.values('mood').annotate(count=Count('mood')).order_by('mood')
+        actions_feedback = entries.exclude(action_worked__isnull=True).values(
+            'action_worked'
+        ).annotate(count=Count('id'))
+    else:
+        mood_distribution = []
+        actions_feedback = []
+    
+    # Check if there's a recent entry that needs feedback (keep this)
+    last_entry_id = request.session.get('last_mood_entry_id')
+    feedback_form = None
+    entry_for_feedback = None
+    
+    if last_entry_id:
+        try:
+            entry_for_feedback = MoodEntry.objects.get(id=last_entry_id, user=request.user)
+            if entry_for_feedback.action_worked is None:
+                time_passed = timezone.now() - entry_for_feedback.created_at
+                if time_passed.total_seconds() > 3600:  # 1 hour
+                    feedback_form = ActionFeedbackForm()
+        except MoodEntry.DoesNotExist:
+            pass
+
+    context = {
+        # New enhanced stats
+        "category_stats": category_stats,
+        "overall_avg_mood": round(overall_avg, 1) if overall_avg else 0,
+        
+        # Original stats (for template compatibility)
+        "entries": recent_entries,
+        "recent_entries": recent_entries,
+        "total_entries": total_entries,
+        "avg_mood": round(overall_avg, 1) if overall_avg else 0,
+        "mood_distribution": mood_distribution,
+        "actions_feedback": actions_feedback,
+        "feedback_form": feedback_form,
+        "entry_for_feedback": entry_for_feedback,
+    }
+
+    return render(request, 'tracker/dashboard.html', context)
+
+
+@login_required
+def submit_feedback(request, entry_id):
+    """Submit feedback on whether an action worked"""
+    entry = get_object_or_404(MoodEntry, id=entry_id, user=request.user)
+    
+    if request.method == 'POST':
+        form = ActionFeedbackForm(request.POST)
+        if form.is_valid():
+            entry.action_worked = form.cleaned_data['action_worked'] == 'True'
+            entry.action_checked_at = timezone.now()
+            entry.save()
+            
+            # Clear the session
+            if 'last_mood_entry_id' in request.session:
+                del request.session['last_mood_entry_id']
+            
+            messages.success(request, "Thank you for your feedback!")
+    
+    return redirect('tracker:dashboard')
+
+
+@login_required
+def delete_entry(request, entry_id):
+    """Delete a mood entry"""
+    entry = get_object_or_404(MoodEntry, id=entry_id, user=request.user)
+    if request.method == 'POST':
+        entry.delete()
+        messages.success(request, "Entry deleted successfully.")
+    return redirect('tracker:dashboard')
