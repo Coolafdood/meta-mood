@@ -1,5 +1,6 @@
 <!-- tracker/templates/tracker/dashboard.html -->
 {% extends 'tracker/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container-fluid">
@@ -73,6 +74,9 @@
                     <a href="{% url 'tracker:step1_mood' %}" class="btn btn-light btn-sm">Add your first entry →</a>
                     {% endif %}
                 </div>
+                <div class="stat-label">Total Entries</div>
+                <div class="stat-value">{{ total_entries }}</div>
+                <div class="stat-sub">lifetime check-ins</div>
             </div>
         </div>
         <div class="col-md-4">
@@ -82,6 +86,9 @@
                     <p class="display-4">{{ overall_avg_mood|floatformat:1 }}</p>
                     <small>/5</small>
                 </div>
+                <div class="stat-label">Overall Mood</div>
+                <div class="stat-value">{{ overall_avg_mood|floatformat:1 }}</div>
+                <div class="stat-sub">average / 5.0</div>
             </div>
         </div>
         <div class="col-md-4">
@@ -124,10 +131,11 @@
                     </h5>
                     <span class="badge bg-secondary">{{ category.total_entries }} entry{{ category.total_entries|pluralize }}</span>
                 </div>
-                <div class="card-body">
-                    <!-- Category Overview -->
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
+
+                <div class="category-body">
+                    <!-- Mood Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-row">
                             <span>Average Mood:</span>
                             <strong class="{% if category.avg_mood >= 4 %}text-success{% elif category.avg_mood >= 3 %}text-warning{% else %}text-danger{% endif %}">
                                 {{ category.avg_mood }}/5
@@ -137,6 +145,7 @@
                             <div class="progress-bar {% if category.avg_mood >= 4 %}bg-success{% elif category.avg_mood >= 3 %}bg-warning{% else %}bg-danger{% endif %}" 
                                  style="width: {{ category.avg_mood_percentage }}%">
                             </div>
+                            {% endwith %}
                         </div>
                     </div>
                     
@@ -147,6 +156,11 @@
                             <strong class="text-success">{{ category.positive_percentage }}%</strong>
                         </div>
                     </div>
+
+                    <!-- Top Reasons -->
+                    <h6 class="mt-4 mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Top Reasons
+                    </h6>
                     
                     <!-- Top Reasons (if any) -->
                     {% if category.top_reasons %}
