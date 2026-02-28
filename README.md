@@ -39,7 +39,7 @@ python manage.py migrate
 - [Technologies Used](#technologies-used)
 - [Code](#code)
 - [Testing](#testing)
-    - [Bugs](#bugs)
+    - [Bugs](#bugs-known-issues--solutions)
     - [Unresolved Bugs](#unresolved-bugs)
     - [Tesing User Stories](#testing-user-stories)
     - [Manual Testing](#manual-testing)
@@ -52,6 +52,11 @@ python manage.py migrate
 ## User Experience
 
 ### Project Goals
+
+People often experience changes in mood without clearly understanding what causes them. Everyday factors such as sleep, health, work, weather, or social interactions can have a strong impact on how we feel, but these patterns are easy to overlook. This app helps users quickly record their mood, select possible reasons, and choose simple actions that might improve their wellbeing.
+
+
+By tracking moods, reasons, and actions over time, users can start to recognise patterns and discover what actually helps them feel better. The app is designed to be fast and simple to use, making it easy to build a habit of regular mood check-ins without overthinking the process.
 
 ### User Stories
 
