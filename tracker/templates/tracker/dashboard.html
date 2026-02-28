@@ -3,40 +3,116 @@
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Overview Stats -->
+    <!-- Welcome Banner for New Users -->
+    {% if is_new_user %}
+    <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+        <h4 class="alert-heading">👋 Welcome to your Mood Dashboard!</h4>
+        <p>You've made <strong>{{ total_entries }} entry{% if total_entries != 1 %}s{% endif %}</strong> so far. 
+        Keep tracking to see insights about your mood patterns!</p>
+        <hr>
+        <p class="mb-0">✨ <a href="{% url 'tracker:step1_mood' %}" class="alert-link">Add another entry</a> to see more statistics.</p>
+    </div>
+    {% endif %}
+
+    <!-- Feedback Card (if needed) -->
+    {% if has_feedback_pending and entry_for_feedback %}
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">⏰ Time for a Check-in!</h5>
+        </div>
+        <div class="card-body">
+            <p>You recorded this mood {{ entry_for_feedback.created_at|timesince }} ago:</p>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <strong>Mood:</strong> 
+                    <span class="badge {% if entry_for_feedback.mood >= 4 %}bg-success{% elif entry_for_feedback.mood >= 3 %}bg-warning{% else %}bg-danger{% endif %}">
+                        {{ entry_for_feedback.get_mood_display }}
+                    </span>
+                </div>
+                {% if entry_for_feedback.reason %}
+                <div class="col-md-4">
+                    <strong>Reason:</strong> {{ entry_for_feedback.reason.text }}
+                </div>
+                {% endif %}
+                {% if entry_for_feedback.action %}
+                <div class="col-md-4">
+                    <strong>Action:</strong> {{ entry_for_feedback.action.text }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <form method="post" action="{% url 'tracker:submit_feedback' entry_for_feedback.id %}" class="mt-3">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Did this action help you feel better?</label>
+                    <div class="btn-group" role="group">
+                        {% for radio in feedback_form.action_worked %}
+                        <div class="form-check form-check-inline me-3">
+                            {{ radio.tag }}
+                            <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                {{ radio.choice_label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Overview Stats - Make them more prominent for new users -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card text-white bg-primary">
                 <div class="card-body">
                     <h5 class="card-title">Total Entries</h5>
                     <p class="display-4">{{ total_entries }}</p>
+                    {% if total_entries == 0 %}
+                    <a href="{% url 'tracker:step1_mood' %}" class="btn btn-light btn-sm">Add your first entry →</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-success">
+        <div class="col-md-4">
+            <div class="card text-white {% if overall_avg_mood >= 4 %}bg-success{% elif overall_avg_mood >= 3 %}bg-warning{% else %}bg-danger{% endif %}">
                 <div class="card-body">
-                    <h5 class="card-title">Overall Mood</h5>
+                    <h5 class="card-title">Average Mood</h5>
                     <p class="display-4">{{ overall_avg_mood|floatformat:1 }}</p>
+                    <small>/5</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
+        <div class="col-md-4">
+            <div class="card text-white bg-info">
                 <div class="card-body">
-                    <h5 class="card-title">Active Categories</h5>
-                    <p class="card-text">
-                        {% for stat in category_stats|slice:":5" %}
-                            <span class="badge bg-info me-1">{{ stat.display_name }}</span>
-                        {% endfor %}
-                    </p>
+                    <h5 class="card-title">Categories Used</h5>
+                    <p class="display-4">{{ category_stats|length }}</p>
+                    <small>out of 7 total</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Dynamic Category Cards -->
-    <h3 class="mb-3">Category Insights</h3>
+    <!-- Quick Action for New Users -->
+    {% if total_entries == 0 %}
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <div class="card bg-light">
+                <div class="card-body py-5">
+                    <h2 class="mb-4">👋 Start Your Mood Journey</h2>
+                    <p class="lead mb-4">Track your first mood entry to see insights and patterns.</p>
+                    <a href="{% url 'tracker:step1_mood' %}" class="btn btn-primary btn-lg">Track Your First Mood →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dynamic Category Cards (only show if there's data) -->
+    {% if category_stats %}
+    <h3 class="mb-3">📊 Category Insights</h3>
     <div class="row">
         {% for category in category_stats %}
         <div class="col-md-6 col-lg-4 mb-4">
@@ -46,7 +122,7 @@
                         <span class="me-2">{{ category.icon }}</span>
                         {{ category.display_name }}
                     </h5>
-                    <span class="badge bg-secondary">{{ category.total_entries }} entries</span>
+                    <span class="badge bg-secondary">{{ category.total_entries }} entry{{ category.total_entries|pluralize }}</span>
                 </div>
                 <div class="card-body">
                     <!-- Category Overview -->
@@ -57,74 +133,60 @@
                                 {{ category.avg_mood }}/5
                             </strong>
                         </div>
-                        <div class="progress mt-1" style="height: 10px;">
+                        <div class="progress mt-1" style="height: 8px;">
                             <div class="progress-bar {% if category.avg_mood >= 4 %}bg-success{% elif category.avg_mood >= 3 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                 style="width: {{ category.avg_mood|floatformat:0|add:'0'|divisibleby:5|yesno:'20,40,60,80,100' }}%">
+                                 style="width: {{ category.avg_mood_percentage }}%">
                             </div>
                         </div>
                     </div>
                     
+                    <!-- Positive Percentage -->
                     <div class="mb-3">
                         <div class="d-flex justify-content-between">
-                            <span>Positive Moods (4-5):</span>
+                            <span>😊 Positive moods:</span>
                             <strong class="text-success">{{ category.positive_percentage }}%</strong>
                         </div>
                     </div>
                     
-                    <!-- Top Reasons in this Category -->
-                    <h6 class="mt-3 mb-2">Top Reasons:</h6>
-                    <ul class="list-group list-group-flush">
+                    <!-- Top Reasons (if any) -->
+                    {% if category.top_reasons %}
+                    <h6 class="mt-3 mb-2">Top reasons:</h6>
+                    <ul class="list-unstyled">
                         {% for reason in category.top_reasons %}
-                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                            <div>
-                                <small>{{ reason.reason__text|truncatechars:30 }}</small>
-                                {% if reason.reason__mood_type == 'positive' %}
-                                    <span class="badge bg-success">😊</span>
-                                {% elif reason.reason__mood_type == 'negative' %}
-                                    <span class="badge bg-danger">😔</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">😐</span>
-                                {% endif %}
-                            </div>
-                            <div class="text-end">
-                                <small class="text-muted">{{ reason.count }}x</small>
-                                <br>
-                                <small class="{% if reason.avg_mood >= 4 %}text-success{% elif reason.avg_mood >= 3 %}text-warning{% else %}text-danger{% endif %}">
-                                    {{ reason.avg_mood|floatformat:1 }}
-                                </small>
-                            </div>
+                        <li class="mb-2">
+                            <small>
+                                {% if reason.reason__mood_type == 'positive' %}😊
+                                {% elif reason.reason__mood_type == 'negative' %}😔
+                                {% else %}😐{% endif %}
+                                {{ reason.reason__text|truncatechars:25 }}
+                                <span class="badge bg-secondary float-end">{{ reason.count }}x</span>
+                            </small>
                         </li>
-                        {% empty %}
-                        <li class="list-group-item px-0 text-muted">No data yet</li>
                         {% endfor %}
                     </ul>
-                    
-                    <!-- Mini sparkline or trend indicator -->
-                    <a href="#" class="btn btn-sm btn-outline-primary mt-3 w-100">View Details</a>
+                    {% endif %}
                 </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                No category data yet. Start tracking your mood to see insights!
             </div>
         </div>
         {% endfor %}
     </div>
+    {% endif %}
 
     <!-- Recent Entries -->
-    <h3 class="mb-3 mt-4">Recent Entries</h3>
+    {% if recent_entries %}
+    <h3 class="mb-3 mt-4">📝 Recent Entries</h3>
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Date</th>
                             <th>Mood</th>
                             <th>Category</th>
                             <th>Reason</th>
+                            <th>Action</th>
+                            <th>Feedback</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -139,13 +201,31 @@
                             </td>
                             <td>
                                 {% if entry.reason %}
-                                    <span class="badge bg-info">{{ entry.reason.get_category_display }}</span>
+                                    {{ entry.reason.get_category_display }}
                                 {% else %}
-                                    <span class="badge bg-secondary">-</span>
+                                    -
                                 {% endif %}
                             </td>
-                            <td>{{ entry.reason.text|default:"Custom reason"|truncatechars:30 }}</td>
+                            <td>{{ entry.reason.text|default:"Custom reason"|truncatechars:25 }}</td>
                             <td>{{ entry.action.text|default:"-"|truncatechars:20 }}</td>
+                            <td>
+                                {% if entry.action_worked is True %}
+                                    <span class="badge bg-success">✅ Helped</span>
+                                {% elif entry.action_worked is False %}
+                                    <span class="badge bg-danger">❌ Didn't help</span>
+                                {% elif entry.action %}
+                                    <span class="badge bg-secondary">⏳ Pending</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'tracker:delete_entry' entry.id %}" 
+                                      onsubmit="return confirm('Delete this entry?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+                                </form>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -153,17 +233,14 @@
             </div>
         </div>
     </div>
-</div>
+    {% endif %}
 
-<!-- Optional: Add Chart.js for visualizations -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // You can add charts here for each category
-    document.addEventListener('DOMContentLoaded', function() {
-        // Example: Create a chart for each category
-        {% for category in category_stats %}
-            // Chart code for {{ category.name }}
-        {% endfor %}
-    });
-</script>
+    <!-- Encouragement for more entries -->
+    {% if total_entries > 0 and total_entries < 5 %}
+    <div class="alert alert-success mt-4 text-center">
+        <p class="mb-2">✨ You're doing great! {{ 5|add:total_entries|add:-5 }} more entries to unlock more insights.</p>
+        <a href="{% url 'tracker:step1_mood' %}" class="btn btn-sm btn-outline-success">Add another entry →</a>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}
