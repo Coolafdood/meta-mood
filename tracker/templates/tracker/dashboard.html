@@ -1,168 +1,278 @@
 <!-- tracker/templates/tracker/dashboard.html -->
 {% extends 'tracker/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="dashboard-container">
+    <!-- Floating background shapes -->
+    <div class="auth-shapes" style="opacity: 0.3;">
+        <div class="auth-shape auth-shape-1"></div>
+        <div class="auth-shape auth-shape-2"></div>
+        <div class="auth-shape auth-shape-3"></div>
+    </div>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h2>
+            <i class="fas fa-chart-pie"></i> Your Emotional Dashboard
+        </h2>
+        <p>
+            <i class="fas fa-calendar-alt"></i> 
+            Last updated: {% now "F j, Y" %}
+        </p>
+    </div>
+
     <!-- Overview Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-label">Total Entries</div>
+                <div class="stat-value">{{ total_entries }}</div>
+                <div class="stat-sub">lifetime check-ins</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-smile"></i>
+                </div>
+                <div class="stat-label">Overall Mood</div>
+                <div class="stat-value">{{ overall_avg_mood|floatformat:1 }}</div>
+                <div class="stat-sub">average / 5.0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="stat-label">Current Streak</div>
+                <div class="stat-value">{{ current_streak|default:"0" }}</div>
+                <div class="stat-sub">days in a row</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-label">Top Category</div>
+                <div class="stat-value">{{ top_category|default:"-" }}</div>
+                <div class="stat-sub">most frequent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Categories -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <h5 class="card-title">Total Entries</h5>
-                    <p class="display-4">{{ total_entries }}</p>
+        <div class="col-12">
+            <div class="stat-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <h5 class="mb-0">Active Categories</h5>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <h5 class="card-title">Overall Mood</h5>
-                    <p class="display-4">{{ overall_avg_mood|floatformat:1 }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Active Categories</h5>
-                    <p class="card-text">
-                        {% for stat in category_stats|slice:":5" %}
-                            <span class="badge bg-info me-1">{{ stat.display_name }}</span>
-                        {% endfor %}
-                    </p>
+                <div class="d-flex flex-wrap">
+                    {% for stat in category_stats|slice:":5" %}
+                        <span class="category-badge">
+                            <i class="fas fa-{{ stat.icon|default:'circle' }}"></i>
+                            {{ stat.display_name }}
+                        </span>
+                    {% empty %}
+                        <span class="text-muted">No categories yet</span>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Dynamic Category Cards -->
-    <h3 class="mb-3">Category Insights</h3>
-    <div class="row">
+    <!-- Category Insights Section -->
+    <h3 class="section-title">
+        <i class="fas fa-chart-bar"></i> Category Insights
+    </h3>
+
+    <div class="row g-4">
         {% for category in category_stats %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <span class="me-2">{{ category.icon }}</span>
-                        {{ category.display_name }}
-                    </h5>
-                    <span class="badge bg-secondary">{{ category.total_entries }} entries</span>
+        <div class="col-md-6 col-lg-4">
+            <div class="category-card">
+                <div class="category-header">
+                    <div class="d-flex align-items-center">
+                        <div class="category-icon me-3">
+                            <i class="fas fa-{{ category.icon|default:'folder' }}"></i>
+                        </div>
+                        <div>
+                            <h5 class="category-title">{{ category.display_name }}</h5>
+                            <small class="text-muted">{{ category.total_entries }} entries</small>
+                        </div>
+                    </div>
+                    <span class="category-badge-count">
+                        <i class="fas fa-chart-line me-1"></i>{{ category.avg_mood }}/5
+                    </span>
                 </div>
-                <div class="card-body">
-                    <!-- Category Overview -->
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
+
+                <div class="category-body">
+                    <!-- Mood Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-row">
                             <span>Average Mood:</span>
                             <strong class="{% if category.avg_mood >= 4 %}text-success{% elif category.avg_mood >= 3 %}text-warning{% else %}text-danger{% endif %}">
                                 {{ category.avg_mood }}/5
                             </strong>
                         </div>
-                        <div class="progress mt-1" style="height: 10px;">
-                            <div class="progress-bar {% if category.avg_mood >= 4 %}bg-success{% elif category.avg_mood >= 3 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                 style="width: {{ category.avg_mood|floatformat:0|add:'0'|divisibleby:5|yesno:'20,40,60,80,100' }}%">
+                        <div class="progress-custom">
+                            {% with width=category.avg_mood|floatformat:0 %}
+                            <div class="progress-custom-bar 
+                                {% if category.avg_mood >= 4 %}progress-success
+                                {% elif category.avg_mood >= 3 %}progress-warning
+                                {% else %}progress-danger{% endif %}" 
+                                style="width: {% widthratio category.avg_mood 5 100 %}">
                             </div>
+                            {% endwith %}
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
+
+                        <div class="stat-row">
                             <span>Positive Moods (4-5):</span>
                             <strong class="text-success">{{ category.positive_percentage }}%</strong>
                         </div>
                     </div>
+
+                    <!-- Top Reasons -->
+                    <h6 class="mt-4 mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Top Reasons
+                    </h6>
                     
-                    <!-- Top Reasons in this Category -->
-                    <h6 class="mt-3 mb-2">Top Reasons:</h6>
-                    <ul class="list-group list-group-flush">
+                    <ul class="reasons-list">
                         {% for reason in category.top_reasons %}
-                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                            <div>
-                                <small>{{ reason.reason__text|truncatechars:30 }}</small>
-                                {% if reason.reason__mood_type == 'positive' %}
-                                    <span class="badge bg-success">😊</span>
-                                {% elif reason.reason__mood_type == 'negative' %}
-                                    <span class="badge bg-danger">😔</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">😐</span>
-                                {% endif %}
+                        <li class="reason-item">
+                            <div class="reason-text">
+                                <span class="reason-badge 
+                                    {% if reason.reason__mood_type == 'positive' %}positive
+                                    {% elif reason.reason__mood_type == 'negative' %}negative
+                                    {% else %}neutral{% endif %}">
+                                    <i class="fas fa-{% if reason.reason__mood_type == 'positive' %}smile{% elif reason.reason__mood_type == 'negative' %}frown{% else %}meh{% endif %}"></i>
+                                </span>
+                                <span>{{ reason.reason__text|truncatechars:25 }}</span>
                             </div>
-                            <div class="text-end">
-                                <small class="text-muted">{{ reason.count }}x</small>
-                                <br>
-                                <small class="{% if reason.avg_mood >= 4 %}text-success{% elif reason.avg_mood >= 3 %}text-warning{% else %}text-danger{% endif %}">
+                            <div class="reason-stats">
+                                <span class="reason-count">{{ reason.count }}x</span>
+                                <span class="reason-score {% if reason.avg_mood >= 4 %}text-success{% elif reason.avg_mood >= 3 %}text-warning{% else %}text-danger{% endif %}">
                                     {{ reason.avg_mood|floatformat:1 }}
-                                </small>
+                                </span>
                             </div>
                         </li>
                         {% empty %}
-                        <li class="list-group-item px-0 text-muted">No data yet</li>
+                        <li class="text-muted text-center py-3">No data yet</li>
                         {% endfor %}
                     </ul>
-                    
-                    <!-- Mini sparkline or trend indicator -->
-                    <a href="#" class="btn btn-sm btn-outline-primary mt-3 w-100">View Details</a>
+
+                    <!-- View Details Link -->
+                    <a href="#" class="btn-details">
+                        View Category Details <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12">
-            <div class="alert alert-info">
-                No category data yet. Start tracking your mood to see insights!
+            <div class="empty-state">
+                <i class="fas fa-chart-line"></i>
+                <h4>No Data Yet</h4>
+                <p>Start tracking your mood to see insights and patterns!</p>
+                <a href="{% url 'tracker:step1_mood' %}" class="btn-primary-gradient">
+                    <i class="fas fa-pen-fancy me-2"></i>Create Your First Entry
+                </a>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Recent Entries -->
-    <h3 class="mb-3 mt-4">Recent Entries</h3>
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Mood</th>
-                            <th>Category</th>
-                            <th>Reason</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in recent_entries %}
-                        <tr>
-                            <td>{{ entry.created_at|date:"M d, H:i" }}</td>
-                            <td>
-                                <span class="badge {% if entry.mood >= 4 %}bg-success{% elif entry.mood >= 3 %}bg-warning{% else %}bg-danger{% endif %}">
-                                    {{ entry.get_mood_display }}
+    <!-- Recent Entries Section -->
+    {% if recent_entries %}
+    <h3 class="section-title mt-5">
+        <i class="fas fa-history"></i> Recent Activity
+    </h3>
+
+    <div class="recent-entries-card">
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Mood</th>
+                        <th>Category</th>
+                        <th>Reason</th>
+                        <th>Action Taken</th>
+                        <th>Outcome</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in recent_entries %}
+                    <tr>
+                        <td>
+                            <i class="far fa-clock text-primary me-2"></i>
+                            {{ entry.created_at|date:"M d, H:i" }}
+                        </td>
+                        <td>
+                            <span class="mood-badge 
+                                {% if entry.mood >= 4 %}great
+                                {% elif entry.mood == 3 %}neutral
+                                {% else %}bad{% endif %}">
+                                {{ entry.get_mood_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if entry.reason %}
+                                <span class="category-tag">
+                                    <i class="fas fa-{{ entry.reason.get_category_icon|default:'tag' }} me-1"></i>
+                                    {{ entry.reason.get_category_display }}
                                 </span>
-                            </td>
-                            <td>
-                                {% if entry.reason %}
-                                    <span class="badge bg-info">{{ entry.reason.get_category_display }}</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">-</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ entry.reason.text|default:"Custom reason"|truncatechars:30 }}</td>
-                            <td>{{ entry.action.text|default:"-"|truncatechars:20 }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ entry.reason.text|default:"Custom"|truncatechars:20 }}</td>
+                        <td>
+                            {% if entry.action %}
+                                <span class="category-tag">
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    {{ entry.action.text|truncatechars:15 }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entry.mood_after %}
+                                <span class="mood-badge 
+                                    {% if entry.mood_after >= 4 %}great
+                                    {% elif entry.mood_after == 3 %}neutral
+                                    {% else %}bad{% endif %}">
+                                    {{ entry.get_mood_after_display }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
+    {% endif %}
 </div>
 
-<!-- Optional: Add Chart.js for visualizations -->
+<!-- Chart.js for Visualizations -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // You can add charts here for each category
     document.addEventListener('DOMContentLoaded', function() {
-        // Example: Create a chart for each category
+        // You can add category-specific charts here
         {% for category in category_stats %}
-            // Chart code for {{ category.name }}
+            
         {% endfor %}
     });
 </script>
