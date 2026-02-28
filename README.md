@@ -110,6 +110,47 @@ The project's Kanban Board can be viewd [here]()
 
 ## App Logic
 
+### User Flow
+
+#### Overview
+A 3-step mood tracking application that helps users log their emotions, identify reasons, and track effective actions.
+
+#### Step 1: Mood Selection
+- User selects current mood on a 5-point scale:
+      - 1 = Very bad
+      - 2 = Bad
+      - 3 = Neutral
+      - 4 = Good
+      - 5 = Excellent
+
+#### Step 2: Reason Selection
+- Based on mood, user sees relevant reasons (10-12 options)
+- Reasons are organised by categories (Sleep, Weather, Work, Relationship, Health, Achievement)
+- "Other" option available for custom reasons
+- Selection saved in session
+
+#### Step 3: Action Selection
+- User received mood-appriopriate action suggestion:
+    - Very bad mood(1) = "What might help you feel a little better?" (rest, mindfulness activities)
+    - Bad mood(2) = "What could improve your mood?" (rest, mindfulness activities)
+    - Neutral mood(3) = "What would you like to do today?" (balanced options)
+    - Good mood(4) = "How would you like to enjoy this moment?" (enhancement activities)
+    - Excellent mood(5) = "What would make this excellent day even better?" (enhancement activities)
+ 
+#### Dashboard and Feedback
+- view mood history and statistics
+- Category-based insights with visual cards
+- Feedback loop: After 1 hour, user is ased if the action helped (the time was shortened to 10s for testing)
+- Track action effectiveness over time
+- Selete entries if needed
+
+#### Data Structure
+- **Reasons:** Linked to mood types (negative/neutral/positive) and categories
+- **Actions:** Connected to specific reasons with mood-appropriate suggestions
+- **MoodEntries:** Complete log with mood, reason, action, and feedback
+
+The app helps users understand their emotional patterns and discover what actually improves their mood!
+
 ## Features
 
 ## Technologies Used
@@ -118,7 +159,27 @@ The project's Kanban Board can be viewd [here]()
 
 ## Testing
 
-### Bugs
+### Bugs, Known Issues & Solutions
+
+#### Mood Label Mismatch
+**Problem:** Step 3 showed "What might help you feel better?" even for excellent moods, which felt inappropriate.
+
+**Solution:** Added dynamic labels based on mood value (1-5) with customized messages for each mood level.
+
+#### Overwhelming Number of Options
+**Problem:** Users faced 20+ reasons/actions to choose from, causing decision fatigue.
+
+**Solution:** Implemented smart filtering that shows max 12 options (2 per category) with random selection for variety.
+
+#### Feedback Form Not Appearing
+**Problem:** Users never saw the follow-up question about whether actions helped.
+
+**Solution:** Fixed timing logic in dashboard view and ensured session data persists correctly between steps.
+
+#### Form Parameters Errors
+**Problem:** `BaseForm.__init__() got an unexpected keyword argument` errors when passing custom querysets.
+
+**Solution:** Properly popped all custom parameters before calling `super().__init__()` in form classes.
 
 ### Unresolved Bugs
 
