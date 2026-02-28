@@ -191,7 +191,7 @@ def step3_action(request):
                                is_custom=is_custom_reason,
                                mood_value=mood
         )
-        
+
         if request.method == 'POST' and form.is_valid():
             action_id = form.cleaned_data.get('action')
             custom_action = form.cleaned_data.get('custom_action')
@@ -241,95 +241,106 @@ def step3_action(request):
     return render(request, 'tracker/step3_action.html', context)
 
 
-# ENHANCED DASHBOARD VIEW
+# Dashboard view
 @login_required
 def dashboard(request):
     """Enhanced dashboard with category statistics"""
     # Get all entries for the user
     entries = MoodEntry.objects.filter(user=request.user).select_related('reason', 'action')
+    total_entries = entries.count()
 
-    # Get statistics by category
+    # Get statistics by category (only if there are entries)
     category_stats = []
-
-    # Get all categories that have at least 3 entries (for meaningful stats)
-    categories_with_data = (
-        entries.exclude(reason__isnull=True)
-        .values("reason__category")
-        .annotate(total_entries=Count("id"))
-        .filter(total_entries__gte=3)
-    )
-
-    for cat in categories_with_data:
-        category = cat["reason__category"]
-        category_entries = entries.filter(reason__category=category)
-
-        # Get reasons within this category
-        reasons_stats = (
-            category_entries.values("reason__text", "reason__mood_type")
-            .annotate(count=Count("id"), avg_mood=Avg("mood"))
-            .order_by("-count")[:5]
+    if total_entries > 0:
+        # Get all categories that have at least 1 entry
+        categories_with_data = (
+            entries.exclude(reason__isnull=True)
+            .values("reason__category")
+            .annotate(total_entries=Count("id"))
+            .filter(total_entries__gte=1)
         )
 
-        # Overall category stats
-        overall = category_entries.aggregate(
-            avg_mood=Avg("mood"),
-            total=Count("id"),
-            positive_count=Count("id", filter=Q(mood__gte=4)),
-        )
+        for cat in categories_with_data:
+            category = cat["reason__category"]
+            category_entries = entries.filter(reason__category=category)
 
-        positive_percentage = (overall['positive_count'] / overall['total'] * 100) if overall['total'] > 0 else 0
+            # Get reasons within this category
+            reasons_stats = (
+                category_entries.values("reason__text", "reason__mood_type")
+                .annotate(count=Count("id"), avg_mood=Avg("mood"))
+                .order_by("-count")[:3] # Show top 3 reasons per category
+            )
 
-        category_stats.append({
-            "name": category,
-            "display_name": dict(Reason.CATEGORY_CHOICES).get(category, category),
-            "total_entries": overall["total"],
-            "avg_mood": round(overall["avg_mood"], 1) if overall["avg_mood"] else 0,
-            "positive_percentage": round(positive_percentage, 1),
-            "top_reasons": reasons_stats,
-            "icon": get_category_icon(category),
-        })
+            # Overall category stats
+            overall = category_entries.aggregate(
+                avg_mood=Avg("mood"),
+                total=Count("id"),
+                positive_count=Count("id", filter=Q(mood__gte=4)),
+            )
 
-    # Sort categories by number of entries (most active first)
-    category_stats.sort(key=lambda x: x["total_entries"], reverse=True)
+            positive_percentage = (overall['positive_count'] / overall['total'] * 100) if overall['total'] > 0 else 0
+
+            category_stats.append({
+                "name": category,
+                "display_name": dict(Reason.CATEGORY_CHOICES).get(category, category),
+                "total_entries": overall["total"],
+                "avg_mood": round(overall["avg_mood"], 1) if overall["avg_mood"] else 0,
+                "positive_percentage": round(positive_percentage, 1),
+                "top_reasons": reasons_stats,
+                "icon": get_category_icon(category),
+                "avg_mood_percentage": round((overall["avg_mood"] / 5) * 100, 1) if overall["avg_mood"] else 0,
+            })
+
+        # Sort categories by number of entries (most active first)
+        category_stats.sort(key=lambda x: x["total_entries"], reverse=True)
 
     # Get recent entries
-    recent_entries = entries[:10]
+    recent_entries = entries[:5]  # Show only 5 recent entries
 
     # Calculate overall average mood
     overall_avg = entries.aggregate(Avg("mood"))["mood__avg"]
     
-    # Original statistics (keep these for backward compatibility)
-    total_entries = entries.count()
+    # Original statistics
     if total_entries > 0:
         mood_distribution = entries.values('mood').annotate(count=Count('mood')).order_by('mood')
-        actions_feedback = entries.exclude(action_worked__isnull=True).values(
-            'action_worked'
-        ).annotate(count=Count('id'))
+        # Fixed actions_feedback query
+        actions_feedback = entries.exclude(
+            action_worked__isnull=True
+        ).values('action__text').annotate(
+            count=Count('id'),
+            success_rate=Avg('action_worked') * 100
+        ).order_by('-success_rate')
     else:
         mood_distribution = []
         actions_feedback = []
     
-    # Check if there's a recent entry that needs feedback (keep this)
+    # Check if there's a recent entry that needs feedback
     last_entry_id = request.session.get('last_mood_entry_id')
     feedback_form = None
     entry_for_feedback = None
     
     if last_entry_id:
         try:
-            entry_for_feedback = MoodEntry.objects.get(id=last_entry_id, user=request.user)
-            if entry_for_feedback.action_worked is None:
-                time_passed = timezone.now() - entry_for_feedback.created_at
-                if time_passed.total_seconds() > 3600:  # 1 hour
-                    feedback_form = ActionFeedbackForm()
+            entry_for_feedback = MoodEntry.objects.get(
+                id=last_entry_id, 
+                user=request.user,
+                action_worked__isnull=True  # Only if not already answered
+            )
+            # Check if enough time has passed (e.g., 1 hour)
+            time_passed = timezone.now() - entry_for_feedback.created_at
+            if time_passed.total_seconds() > 1800:  # 0.5 hour
+                feedback_form = ActionFeedbackForm(initial={'entry_id': entry_for_feedback.id})
         except MoodEntry.DoesNotExist:
-            pass
+            # Clear invalid session key
+            if 'last_mood_entry_id' in request.session:
+                del request.session['last_mood_entry_id']
 
     context = {
         # New enhanced stats
         "category_stats": category_stats,
         "overall_avg_mood": round(overall_avg, 1) if overall_avg else 0,
         
-        # Original stats (for template compatibility)
+        # Original stats
         "entries": recent_entries,
         "recent_entries": recent_entries,
         "total_entries": total_entries,
@@ -338,6 +349,10 @@ def dashboard(request):
         "actions_feedback": actions_feedback,
         "feedback_form": feedback_form,
         "entry_for_feedback": entry_for_feedback,
+        
+        # New helpful flags
+        "is_new_user": total_entries < 3,
+        "has_feedback_pending": feedback_form is not None,
     }
 
     return render(request, 'tracker/dashboard.html', context)
@@ -351,7 +366,9 @@ def submit_feedback(request, entry_id):
     if request.method == 'POST':
         form = ActionFeedbackForm(request.POST)
         if form.is_valid():
-            entry.action_worked = form.cleaned_data['action_worked'] == 'True'
+            # Convert string 'True'/'False' to boolean
+            worked_value = form.cleaned_data['action_worked']
+            entry.action_worked = worked_value == 'True' or worked_value is True
             entry.action_checked_at = timezone.now()
             entry.save()
             
