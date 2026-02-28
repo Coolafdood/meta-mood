@@ -3,17 +3,15 @@ from tracker.models import Reason, Action
 
 
 class Command(BaseCommand):
-    help = 'Seed the database with initial reasons and actions'
+    help = 'Safely seed the database with initial reasons and actions'
 
     def handle(self, *args, **options):
-        self.stdout.write('Seeding data...')
+        self.stdout.write('Starting safe database seeding...')
+        self.stdout.write('   (This will not delete existing data)\n')
    
-        # Clear existing data (BE CAREFUL - only in development!)
-        self.stdout.write('Clearing existing data...')
-        Reason.objects.all().delete()
-        Action.objects.all().delete()
-   
-        # Create reasons by category and mood type
+        # ============ CREATE/UPDATE REASONS ============
+        self.stdout.write(' Creating/updating reasons...')
+        
         reasons_data = [
             # Sleep category
             {"text": "I didn't sleep well", "mood_type": "negative", "category": "sleep"},
@@ -60,95 +58,256 @@ class Command(BaseCommand):
             {"text": "Other reason", "mood_type": "neutral", "category": "other", "is_generic": True},
         ]
 
-        # Create all reasons
-        created_reasons = []
         for reason_data in reasons_data:
             reason, created = Reason.objects.get_or_create(
-                text=reason_data["text"],
-                defaults={
+                text=reason_data["text"],  # Find by unique text
+                defaults={  # Only used if creating new
                     "mood_type": reason_data["mood_type"],
                     "category": reason_data["category"],
                     "is_generic": reason_data.get("is_generic", False)
                 }
             )
-            created_reasons.append(reason)
             if created:
-                self.stdout.write(f"  Created reason: {reason.text}")
+                self.stdout.write(f"Created reason: {reason.text}")
+            else:
+                # Optionally update existing reasons if needed
+                needs_update = False
+                if reason.mood_type != reason_data["mood_type"]:
+                    reason.mood_type = reason_data["mood_type"]
+                    needs_update = True
+                if reason.category != reason_data["category"]:
+                    reason.category = reason_data["category"]
+                    needs_update = True
+                if reason.is_generic != reason_data.get("is_generic", False):
+                    reason.is_generic = reason_data.get("is_generic", False)
+                    needs_update = True
+                
+                if needs_update:
+                    reason.save()
+                    self.stdout.write(f"Updated reason: {reason.text}")
+                else:
+                    self.stdout.write(f"Already exists: {reason.text}")
 
-        # Create actions
-        actions_data = [
-            # Rest/Sleep actions
-            {"text": "Take a 20-minute power nap", "category": "rest"},
-            {"text": "Go to bed earlier", "category": "rest"},
-            {"text": "Create a relaxing bedtime routine", "category": "rest"},
-            {"text": "Use white noise or calming music", "category": "rest"},
+        # Get reasons by mood type for later connections
+        positive_reasons = Reason.objects.filter(mood_type="positive")
+        negative_reasons = Reason.objects.filter(mood_type="negative")
+        neutral_reasons = Reason.objects.filter(mood_type="neutral")
+        
+        self.stdout.write(f"\n Reasons summary:")
+        self.stdout.write(f"   Positive: {positive_reasons.count()}")
+        self.stdout.write(f"   Negative: {negative_reasons.count()}")
+        self.stdout.write(f"   Neutral: {neutral_reasons.count()}")
 
-            # Social actions
-            {"text": "Call a friend or family member", "category": "social"},
-            {"text": "Meet someone for coffee", "category": "social"},
-            {"text": "Join a group activity", "category": "social"},
-            {"text": "Send a message to someone you care about", "category": "social"},
+        # ============ CREATE/UPDATE ACTIONS ============
+        self.stdout.write('\n Creating/updating actions by mood type...')
 
-            # Physical Activity
-            {"text": "Go for a walk outside", "category": "activity"},
-            {"text": "Do some stretching", "category": "activity"},
-            {"text": "Exercise for 15 minutes", "category": "activity"},
-            {"text": "Try yoga", "category": "activity"},
-
-            # Mindfulness
-            {"text": "Practice deep breathing", "category": "mindfulness"},
-            {"text": "Try meditation for 5 minutes", "category": "mindfulness"},
-            {"text": "Write in a journal", "category": "mindfulness"},
-            {"text": "Practice gratitude", "category": "mindfulness"},
-
-            # Creative
-            {"text": "Listen to music", "category": "creative"},
-            {"text": "Draw or paint", "category": "creative"},
-            {"text": "Read a book", "category": "creative"},
-            {"text": "Watch something funny", "category": "creative"},
-
-            # Generic actions (for 'Other' reasons)
-            {"text": "Take time for yourself", "category": "other", "is_generic": True},
-            {"text": "Do something you enjoy", "category": "other", "is_generic": True},
-            {"text": "Change your environment", "category": "other", "is_generic": True},
-            {"text": "Talk to someone", "category": "other", "is_generic": True},
+        # 1. ACTIONS FOR POSITIVE MOODS (4-5) - Enhance/Maintain
+        positive_actions = [
+            # Mindfulness/Reflection
+            {"text": "Write down 3 things you're grateful for", "category": "mindfulness"},
+            {"text": "Savor this good moment", "category": "mindfulness"},
+            {"text": "Take a photo of something beautiful", "category": "creative"},
+            
+            # Social
+            {"text": "Share your good mood with someone", "category": "social"},
+            {"text": "Help someone else feel good too", "category": "social"},
+            {"text": "Do a random act of kindness", "category": "social"},
+            
+            # Creative/Fun
+            {"text": "Do something you're passionate about", "category": "creative"},
+            {"text": "Plan something fun for the weekend", "category": "creative"},
+            {"text": "Dance to your favorite song", "category": "activity"},
+            {"text": "Celebrate your good mood", "category": "social"},
         ]
 
-        for action_data in actions_data:
+        positive_action_objects = []
+        for action_data in positive_actions:
             action, created = Action.objects.get_or_create(
                 text=action_data["text"],
                 defaults={
                     "category": action_data["category"],
-                    "is_generic": action_data.get("is_generic", False)
+                    "is_generic": False
                 }
             )
-     
+            positive_action_objects.append(action)
             if created:
-                self.stdout.write(f"  Created action: {action.text}")
-      
-            # Connect actions to relevant reasons based on category
-            if not action_data.get("is_generic", False):
-                if action.category == "rest":
-                    # Connect to sleep-related reasons
-                    sleep_reasons = Reason.objects.filter(category="sleep")
-                    action.reasons.add(*sleep_reasons)
-                    self.stdout.write(f"    Connected to {sleep_reasons.count()} sleep reasons")
-          
-                elif action.category == "social":
-                    # Connect to relationship reasons
-                    relationship_reasons = Reason.objects.filter(category="relationships")
-                    action.reasons.add(*relationship_reasons)
-           
-                elif action.category == "activity":
-                    # Connect to health and energy reasons
-                    health_reasons = Reason.objects.filter(
-                        category__in=["health", "sleep"]
-                    )
-                    action.reasons.add(*health_reasons)
-  
-        # Summary
+                self.stdout.write(f"  Created positive action: {action.text}")
+            else:
+                self.stdout.write(f"  Already exists: {action.text}")
+
+        # 2. ACTIONS FOR NEGATIVE MOODS (1-2) - Improve/Fix
+        negative_actions = [
+            # Rest/Sleep
+            {"text": "Take a short nap", "category": "rest"},
+            {"text": "Go to bed earlier", "category": "rest"},
+            {"text": "Create a relaxing bedtime routine", "category": "rest"},
+            {"text": "Use white noise or calming music", "category": "rest"},
+            
+            # Mindfulness
+            {"text": "Practice deep breathing for 5 minutes", "category": "mindfulness"},
+            {"text": "Try meditation for 5 minutes", "category": "mindfulness"},
+            {"text": "Write down what's bothering you", "category": "mindfulness"},
+            
+            # Activity
+            {"text": "Go for a walk outside", "category": "activity"},
+            {"text": "Do some gentle stretching", "category": "activity"},
+            {"text": "Exercise for 15 minutes", "category": "activity"},
+            
+            # Social
+            {"text": "Talk to a friend or family member", "category": "social"},
+            {"text": "Call someone who cares about you", "category": "social"},
+            
+            # Comfort
+            {"text": "Listen to calming music", "category": "creative"},
+            {"text": "Make yourself a cup of tea", "category": "rest"},
+            {"text": "Take a warm shower or bath", "category": "rest"},
+            {"text": "Watch something funny", "category": "creative"},
+            {"text": "Give yourself permission to rest", "category": "rest"},
+        ]
+
+        negative_action_objects = []
+        for action_data in negative_actions:
+            action, created = Action.objects.get_or_create(
+                text=action_data["text"],
+                defaults={
+                    "category": action_data["category"],
+                    "is_generic": False
+                }
+            )
+            negative_action_objects.append(action)
+            if created:
+                self.stdout.write(f"  ✅ Created negative action: {action.text}")
+            else:
+                self.stdout.write(f"  ⏩ Already exists: {action.text}")
+
+        # 3. ACTIONS FOR NEUTRAL MOODS (3) - Balanced
+        neutral_actions = [
+            {"text": "Check in with how you're feeling", "category": "mindfulness"},
+            {"text": "Do something small you enjoy", "category": "creative"},
+            {"text": "Connect with someone briefly", "category": "social"},
+            {"text": "Go for a short walk", "category": "activity"},
+            {"text": "Read a few pages of a book", "category": "creative"},
+            {"text": "Listen to a podcast", "category": "creative"},
+            {"text": "Tidy up one small area", "category": "activity"},
+            {"text": "Plan something for tomorrow", "category": "mindfulness"},
+        ]
+
+        neutral_action_objects = []
+        for action_data in neutral_actions:
+            action, created = Action.objects.get_or_create(
+                text=action_data["text"],
+                defaults={
+                    "category": action_data["category"],
+                    "is_generic": False
+                }
+            )
+            neutral_action_objects.append(action)
+            if created:
+                self.stdout.write(f"  Created neutral action: {action.text}")
+            else:
+                self.stdout.write(f"  Already exists: {action.text}")
+
+        # 4. GENERIC ACTIONS (for 'Other' reasons)
+        generic_actions = [
+            # Positive generic
+            {"text": "Savor this moment", "category": "mindfulness", "mood": "positive"},
+            {"text": "Share your positive energy", "category": "social", "mood": "positive"},
+            
+            # Negative generic
+            {"text": "Be kind to yourself", "category": "mindfulness", "mood": "negative"},
+            {"text": "Remember this feeling will pass", "category": "mindfulness", "mood": "negative"},
+            
+            # Neutral generic
+            {"text": "Take a moment for yourself", "category": "mindfulness", "mood": "neutral"},
+            {"text": "Do one small thing today", "category": "creative", "mood": "neutral"},
+            
+            # Truly generic (for all moods)
+            {"text": "Take time for yourself", "category": "other", "mood": "all"},
+            {"text": "Do something you enjoy", "category": "other", "mood": "all"},
+            {"text": "Change your environment", "category": "other", "mood": "all"},
+            {"text": "Talk to someone", "category": "social", "mood": "all"},
+        ]
+
+        for action_data in generic_actions:
+            action, created = Action.objects.get_or_create(
+                text=action_data["text"],
+                defaults={
+                    "category": action_data["category"],
+                    "is_generic": True
+                }
+            )
+            if created:
+                self.stdout.write(f"  Created generic action: {action.text}")
+            else:
+                self.stdout.write(f"  Already exists: {action.text}")
+
+        # ============ CONNECT ACTIONS TO REASONS ============
+        self.stdout.write('\n Connecting actions to reasons...')
+
+        # Clear existing connections and reconnect (safe operation)
+        # This ensures relationships are correct even if they changed
+        
+        # Connect positive actions to ALL positive reasons
+        for action in positive_action_objects:
+            action.reasons.clear()
+            action.reasons.add(*positive_reasons)
+            self.stdout.write(f"   Connected '{action.text}' to {positive_reasons.count()} positive reasons")
+
+        # Connect negative actions to ALL negative reasons
+        for action in negative_action_objects:
+            action.reasons.clear()
+            action.reasons.add(*negative_reasons)
+            self.stdout.write(f"   Connected '{action.text}' to {negative_reasons.count()} negative reasons")
+
+        # Connect neutral actions to ALL neutral reasons
+        for action in neutral_action_objects:
+            action.reasons.clear()
+            action.reasons.add(*neutral_reasons)
+            self.stdout.write(f"   Connected '{action.text}' to {neutral_reasons.count()} neutral reasons")
+
+        # Connect generic actions based on their mood
+        generic_positive = Action.objects.filter(
+            text__in=[a["text"] for a in generic_actions if a.get("mood") == "positive"],
+            is_generic=True
+        )
+        for action in generic_positive:
+            action.reasons.clear()
+            action.reasons.add(*positive_reasons)
+
+        generic_negative = Action.objects.filter(
+            text__in=[a["text"] for a in generic_actions if a.get("mood") == "negative"],
+            is_generic=True
+        )
+        for action in generic_negative:
+            action.reasons.clear()
+            action.reasons.add(*negative_reasons)
+
+        generic_neutral = Action.objects.filter(
+            text__in=[a["text"] for a in generic_actions if a.get("mood") == "neutral"],
+            is_generic=True
+        )
+        for action in generic_neutral:
+            action.reasons.clear()
+            action.reasons.add(*neutral_reasons)
+
+        # Truly generic actions (mood="all") connect to all reasons
+        generic_all = Action.objects.filter(
+            text__in=[a["text"] for a in generic_actions if a.get("mood") == "all"],
+            is_generic=True
+        )
+        for action in generic_all:
+            action.reasons.clear()
+            action.reasons.add(*positive_reasons, *negative_reasons, *neutral_reasons)
+
+        # ============ FINAL SUMMARY ============
         self.stdout.write(self.style.SUCCESS(
-            f'\nSuccessfully seeded:'
-            f'\n  {Reason.objects.count()} reasons'
-            f'\n  {Action.objects.count()} actions'
+            f'\n SUCCESS! Database seeding completed:'
+            f'\n    Reasons: {Reason.objects.count()} total'
+            f'\n    Actions: {Action.objects.count()} total'
+            f'\n'
+            f'\n   Positive actions: {len(positive_action_objects)}'
+            f'\n   Negative actions: {len(negative_action_objects)}'
+            f'\n   Neutral actions: {len(neutral_action_objects)}'
+            f'\n   Generic actions: {Action.objects.filter(is_generic=True).count()}'
         ))
+    

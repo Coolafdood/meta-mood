@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, Avg, Q
-from django.db import models
+
+import random
 
 from .models import MoodEntry, Reason, Action
 from .forms import Step1MoodForm, Step2ReasonForm, Step3ActionForm, ActionFeedbackForm
@@ -24,7 +25,7 @@ def get_category_icon(category):
     return icons.get(category, "📊")
 
 
-# Original views (keep ALL of these)
+# Landing page with generic information
 def index(request):
     """Landing page with generic information"""
     return render(request, 'tracker/index.html')
@@ -53,8 +54,62 @@ def step2_reason(request):
         messages.error(request, "Please start from the beginning.")
         return redirect('tracker:step1_mood')
     
-    if request.method == 'POST':
-        form = Step2ReasonForm(request.POST, mood_value=mood)
+    # Determine mood type for filtering reasons
+    if mood <= 2:
+        mood_type = "negative"
+    elif mood == 3:
+        mood_type = "neutral"
+    else:
+        mood_type = "positive"
+
+    # For GET request - preparee reasons
+    if request.method == 'GET':
+        # Get all reasons for this mood type
+        all_reasons = Reason.objects.filter(mood_type=mood_type, is_generic=False)
+
+        # Strategy: Get up to 2 from each category
+        categories = ['sleep', 'work', 'relationships', 'health', 'weather', 'achievement', 'other']
+        selected_reasons = []
+
+        for category in categories:
+            if category == 'other':
+                # handled by form
+                continue
+
+            category_reasons = all_reasons.filter(category=category)
+            count = category_reasons.count()
+
+            if count >= 2:
+                # Randomly select 2 reasons from categories with 2 or more reasons
+                reason_list = list(category_reasons)
+                selected_reasons.extend(random.sample(reason_list, 2))
+            elif count == 1:
+                # Take the only one reason if there's just one
+                selected_reasons.extend(category_reasons)
+            # If there are no reasons in this category, it will simply be skipped
+        
+        # Shuffle the final list for variety
+        random.shuffle(selected_reasons)
+
+        # Limit to 10-12 total
+        selected_reasons = selected_reasons[:12]
+
+        # Create custom form with these reasons
+        form = Step2ReasonForm(
+            mood_value=mood,
+            custom_queryset=selected_reasons
+        )
+
+        total_options = len(selected_reasons)
+
+    else:
+        #POST request - process form submission
+        form = Step2ReasonForm(
+            request.POST,
+            mood_value=mood
+        )
+        total_options = 0
+
         if form.is_valid():
             reason_id = form.cleaned_data.get('reason')
             custom_reason = form.cleaned_data.get('custom_reason')
@@ -69,10 +124,12 @@ def step2_reason(request):
                 request.session['reason_id'] = int(reason_id)
             
             return redirect('tracker:step3_action')
-    else:
-        form = Step2ReasonForm(mood_value=mood)
-    
-    return render(request, 'tracker/step2_reason.html', {'form': form, 'mood': mood})
+
+    return render(request, 'tracker/step2_reason.html', {
+        'form': form,
+        'mood': mood,
+        'total_options': total_options,
+    })
 
 
 @login_required
@@ -86,10 +143,56 @@ def step3_action(request):
     if not mood:
         messages.error(request, "Please start from the beginning.")
         return redirect('tracker:step1_mood')
-    
-    if request.method == 'POST':
-        form = Step3ActionForm(request.POST, reason_id=reason_id, is_custom=is_custom_reason)
-        if form.is_valid():
+
+    # For GET request - prepare smart action selection
+    if request.method == 'GET' and not is_custom_reason and reason_id:
+        reason = Reason.objects.get(id=reason_id)
+
+        # Get actions related to this reason
+        all_actions = reason.actions.all()
+
+        # Group actions by category
+        action_categories = ['rest', 'social', 'activity', 'mindfulness', 'creative', 'other']
+        selected_actions = []
+
+        for category in action_categories:
+            if category == 'other':
+                # handled by form, always include "Other" option
+                continue
+
+            category_actions = all_actions.filter(category=category)
+            count = category_actions.count()
+            
+            if count >= 2:
+                # Randomly select 2 actions from categories with 2 or more actions
+                action_list = list(category_actions)
+                selected_actions.extend(random.sample(action_list, 2))
+            elif count == 1:
+                # Take the only one action if there's just one
+                selected_actions.extend(category_actions)
+            # If there are no actions in this category, it will simply be skipped
+
+        # Shuffle and limit to 12 total
+        random.shuffle(selected_actions)
+        selected_actions = selected_actions[:12]
+
+        # Create form with these actions
+        form = Step3ActionForm(
+            reason_id=reason_id,
+            is_custom=is_custom_reason,
+            custom_queryset=selected_actions,
+            mood_value=mood
+        )
+
+    else:
+        # POST request - process form submission
+        form = Step3ActionForm(request.POST or None,
+                               reason_id=reason_id,
+                               is_custom=is_custom_reason,
+                               mood_value=mood
+        )
+        
+        if request.method == 'POST' and form.is_valid():
             action_id = form.cleaned_data.get('action')
             custom_action = form.cleaned_data.get('custom_action')
             
@@ -128,9 +231,7 @@ def step3_action(request):
             
             messages.success(request, "Your mood has been recorded!")
             return redirect('tracker:dashboard')
-    else:
-        form = Step3ActionForm(reason_id=reason_id, is_custom=is_custom_reason)
-    
+
     context = {
         'form': form,
         'mood': mood,
@@ -140,7 +241,7 @@ def step3_action(request):
     return render(request, 'tracker/step3_action.html', context)
 
 
-# ENHANCED DASHBOARD VIEW (replace your old dashboard with this one)
+# ENHANCED DASHBOARD VIEW
 @login_required
 def dashboard(request):
     """Enhanced dashboard with category statistics"""
