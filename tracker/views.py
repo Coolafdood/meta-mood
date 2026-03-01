@@ -222,6 +222,15 @@ def step3_action(request):
                 notes = f"Custom action: {custom_action}"
                 if is_custom_reason:
                     notes = f"Custom reason: {custom_reason_text}\n{notes}"
+                custom_action_obj, _ = Action.objects.get_or_create(
+                    text="Custom action",
+                    defaults={
+                        "category": "other",
+                        "is_generic": True
+                }
+                )
+                action = custom_action_obj
+             
             else:
                 action = Action.objects.get(id=int(action_id))
                 if is_custom_reason:
@@ -280,7 +289,7 @@ def dashboard(request):
             reasons_stats = (
                 category_entries.values("reason__text", "reason__mood_type")
                 .annotate(count=Count("id"), avg_mood=Avg("mood"))
-                .order_by("-count")[:3]  # Show top 3 reasons per category
+                .order_by("-count")[:3]
             )
 
             # Overall category stats
@@ -321,7 +330,7 @@ def dashboard(request):
         category_stats.sort(key=lambda x: x["total_entries"], reverse=True)
 
     # Get recent entries
-    recent_entries = entries[:5]  # Show only 5 recent entries
+    recent_entries = entries[:5]
 
     # Calculate overall average mood
     overall_avg = entries.aggregate(Avg("mood"))["mood__avg"]
@@ -331,7 +340,6 @@ def dashboard(request):
         mood_distribution = (
             entries.values("mood").annotate(count=Count("mood")).order_by("mood")
         )
-        # Fixed actions_feedback query
         actions_feedback = (
             entries.exclude(action_worked__isnull=True)
             .values("action__text")
@@ -342,41 +350,28 @@ def dashboard(request):
         mood_distribution = []
         actions_feedback = []
 
-    # Check if there's a recent entry that needs feedback
-    last_entry_id = request.session.get("last_mood_entry_id")
-    feedback_form = None
-    entry_for_feedback = None
-
-    print(f"🔍 Dashboard - last_entry_id from session: {last_entry_id}")
-
-    if last_entry_id:
-        try:
-            entry_for_feedback = MoodEntry.objects.get(
-                id=last_entry_id,
-                user=request.user,
-                action_worked__isnull=True,  # Only if not already answered
-            )
-            print(
-                f"🔍 Found entry: {entry_for_feedback.id}, created: {entry_for_feedback.created_at}"
-            )
-
-            # Only show if no feedback yet AND time has passed
-            if entry_for_feedback.action_worked is None:
-                # Check if enough time has passed (e.g., 1 hour)
-                time_passed = timezone.now() - entry_for_feedback.created_at
-                print(f"🔍 Time passed: {time_passed.total_seconds()} seconds")
-                if time_passed.total_seconds() > 1800:  # 0.5 hour
-                    print(f"🔍✅ Creating feedback form")
-                    feedback_form = ActionFeedbackForm(
-                        initial={"entry_id": entry_for_feedback.id}
-                    )
-                else:
-                    print(f"🔍⏳ Not enough time passed")
-        except MoodEntry.DoesNotExist:
-            # Clear invalid session key
-            print(f"🔍❌ Entry not found or already has feedback")
-            if "last_mood_entry_id" in request.session:
-                del request.session["last_mood_entry_id"]
+    # ============ FIXED FEEDBACK LOGIC ============
+    # Time threshold (20 seconds for testing)
+    time_threshold_seconds = 20
+    
+    # Look for entries that need feedback
+    pending_feedback = MoodEntry.objects.filter(
+        user=request.user,
+        action__isnull=False,
+        action_worked__isnull=True,
+    ).order_by('created_at')
+    
+    # Create feedback forms for eligible entries
+    feedback_forms = []
+    for candidate in pending_feedback:
+        time_passed = timezone.now() - candidate.created_at
+        if time_passed.total_seconds() > time_threshold_seconds:
+            form = ActionFeedbackForm(initial={"entry_id": candidate.id})
+            feedback_forms.append({"entry": candidate, "form": form})
+            if len(feedback_forms) >= 3:  # Limit to 3
+                break
+    
+    has_feedback_pending = len(feedback_forms) > 0
 
     context = {
         # New enhanced stats
@@ -389,11 +384,11 @@ def dashboard(request):
         "avg_mood": round(overall_avg, 1) if overall_avg else 0,
         "mood_distribution": mood_distribution,
         "actions_feedback": actions_feedback,
-        "feedback_form": feedback_form,
-        "entry_for_feedback": entry_for_feedback,
+        # NEW: Multiple feedback forms
+        "feedback_forms": feedback_forms,
+        "has_feedback_pending": has_feedback_pending,
         # New helpful flags
         "is_new_user": total_entries < 3,
-        "has_feedback_pending": feedback_form is not None,
     }
 
     return render(request, "tracker/dashboard.html", context)
