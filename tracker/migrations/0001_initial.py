@@ -15,44 +15,159 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Reason',
+            name="Reason",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.CharField(max_length=100)),
-                ('mood_type', models.CharField(choices=[('negative', 'Negative'), ('neutral', 'Neutral'), ('positive', 'Positive')], max_length=10)),
-                ('category', models.CharField(choices=[('sleep', 'Sleep Related'), ('work', 'Work/School'), ('relationships', 'Relationships'), ('health', 'Health'), ('weather', 'Weather/Environment'), ('achievement', 'Achievements'), ('other', 'Other')], default='other', max_length=20)),
-                ('is_generic', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.CharField(max_length=100)),
+                (
+                    "mood_type",
+                    models.CharField(
+                        choices=[
+                            ("negative", "Negative"),
+                            ("neutral", "Neutral"),
+                            ("positive", "Positive"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("sleep", "Sleep Related"),
+                            ("work", "Work/School"),
+                            ("relationships", "Relationships"),
+                            ("health", "Health"),
+                            ("weather", "Weather/Environment"),
+                            ("achievement", "Achievements"),
+                            ("other", "Other"),
+                        ],
+                        default="other",
+                        max_length=20,
+                    ),
+                ),
+                ("is_generic", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Action',
+            name="Action",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.CharField(max_length=100)),
-                ('category', models.CharField(choices=[('rest', 'Rest/Sleep'), ('social', 'Social'), ('activity', 'Physical Activity'), ('mindfulness', 'Mindfulness'), ('creative', 'Creative'), ('other', 'Other')], default='other', max_length=20)),
-                ('is_generic', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('reasons', models.ManyToManyField(blank=True, related_name='actions', to='tracker.reason')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.CharField(max_length=100)),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("rest", "Rest/Sleep"),
+                            ("social", "Social"),
+                            ("activity", "Physical Activity"),
+                            ("mindfulness", "Mindfulness"),
+                            ("creative", "Creative"),
+                            ("other", "Other"),
+                        ],
+                        default="other",
+                        max_length=20,
+                    ),
+                ),
+                ("is_generic", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "reasons",
+                    models.ManyToManyField(
+                        blank=True, related_name="actions", to="tracker.reason"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='MoodEntry',
+            name="MoodEntry",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mood', models.IntegerField(choices=[(1, 'Very bad'), (2, 'Bad'), (3, 'Neutral'), (4, 'Good'), (5, 'Excellent')])),
-                ('notes', models.TextField(blank=True)),
-                ('action_worked', models.BooleanField(blank=True, null=True)),
-                ('action_checked_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('action', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='mood_entries', to='tracker.action')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='mood_entries', to=settings.AUTH_USER_MODEL)),
-                ('reason', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='mood_entries', to='tracker.reason')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mood",
+                    models.IntegerField(
+                        choices=[
+                            (1, "Very bad"),
+                            (2, "Bad"),
+                            (3, "Neutral"),
+                            (4, "Good"),
+                            (5, "Excellent"),
+                        ]
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                ("action_worked", models.BooleanField(blank=True, null=True)),
+                ("action_checked_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "action",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="mood_entries",
+                        to="tracker.action",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="mood_entries",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "reason",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="mood_entries",
+                        to="tracker.reason",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['user', 'created_at'], name='tracker_moo_user_id_40bb0c_idx'), models.Index(fields=['user', 'mood'], name='tracker_moo_user_id_2f62ba_idx'), models.Index(fields=['created_at'], name='tracker_moo_created_4f3ca8_idx')],
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["user", "created_at"],
+                        name="tracker_moo_user_id_40bb0c_idx",
+                    ),
+                    models.Index(
+                        fields=["user", "mood"], name="tracker_moo_user_id_2f62ba_idx"
+                    ),
+                    models.Index(
+                        fields=["created_at"], name="tracker_moo_created_4f3ca8_idx"
+                    ),
+                ],
             },
         ),
     ]

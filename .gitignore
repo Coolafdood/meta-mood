@@ -12,6 +12,8 @@ Thumbs.db
 env.py
 
 # Python
+staticfiles/
+media/
 __pycache__/
 *.py[cod]
 .venv/
@@ -35,3 +37,4 @@ data/interim/
 *.pem
 *.p12
 "@ | Out-File -Encoding utf8 .gitignore
+

@@ -28,32 +28,32 @@ def get_category_icon(category):
 # Landing page with generic information
 def index(request):
     """Landing page with generic information"""
-    return render(request, 'tracker/index.html')
+    return render(request, "tracker/index.html")
 
 
 @login_required
 def step1_mood(request):
     """Step 1: User selects their mood"""
-    if request.method == 'POST':
+    if request.method == "POST":
         form = Step1MoodForm(request.POST)
         if form.is_valid():
             # Save mood in session
-            request.session['mood'] = int(form.cleaned_data['mood'])
-            return redirect('tracker:step2_reason')
+            request.session["mood"] = int(form.cleaned_data["mood"])
+            return redirect("tracker:step2_reason")
     else:
         form = Step1MoodForm()
-    
-    return render(request, 'tracker/step1_mood.html', {'form': form})
+
+    return render(request, "tracker/step1_mood.html", {"form": form})
 
 
 @login_required
 def step2_reason(request):
     """Step 2: User selects reason for their mood"""
-    mood = request.session.get('mood')
+    mood = request.session.get("mood")
     if not mood:
         messages.error(request, "Please start from the beginning.")
-        return redirect('tracker:step1_mood')
-    
+        return redirect("tracker:step1_mood")
+
     # Determine mood type for filtering reasons
     if mood <= 2:
         mood_type = "negative"
@@ -63,16 +63,24 @@ def step2_reason(request):
         mood_type = "positive"
 
     # For GET request - preparee reasons
-    if request.method == 'GET':
+    if request.method == "GET":
         # Get all reasons for this mood type
         all_reasons = Reason.objects.filter(mood_type=mood_type, is_generic=False)
 
         # Strategy: Get up to 2 from each category
-        categories = ['sleep', 'work', 'relationships', 'health', 'weather', 'achievement', 'other']
+        categories = [
+            "sleep",
+            "work",
+            "relationships",
+            "health",
+            "weather",
+            "achievement",
+            "other",
+        ]
         selected_reasons = []
 
         for category in categories:
-            if category == 'other':
+            if category == "other":
                 # handled by form
                 continue
 
@@ -87,7 +95,7 @@ def step2_reason(request):
                 # Take the only one reason if there's just one
                 selected_reasons.extend(category_reasons)
             # If there are no reasons in this category, it will simply be skipped
-        
+
         # Shuffle the final list for variety
         random.shuffle(selected_reasons)
 
@@ -95,74 +103,79 @@ def step2_reason(request):
         selected_reasons = selected_reasons[:12]
 
         # Create custom form with these reasons
-        form = Step2ReasonForm(
-            mood_value=mood,
-            custom_queryset=selected_reasons
-        )
+        form = Step2ReasonForm(mood_value=mood, custom_queryset=selected_reasons)
 
         total_options = len(selected_reasons)
 
     else:
-        #POST request - process form submission
-        form = Step2ReasonForm(
-            request.POST,
-            mood_value=mood
-        )
+        # POST request - process form submission
+        form = Step2ReasonForm(request.POST, mood_value=mood)
         total_options = 0
 
         if form.is_valid():
-            reason_id = form.cleaned_data.get('reason')
-            custom_reason = form.cleaned_data.get('custom_reason')
-            
-            if reason_id == 'other':
+            reason_id = form.cleaned_data.get("reason")
+            custom_reason = form.cleaned_data.get("custom_reason")
+
+            if reason_id == "other":
                 # Save that it's a custom reason
-                request.session['is_custom_reason'] = True
-                request.session['custom_reason_text'] = custom_reason
+                request.session["is_custom_reason"] = True
+                request.session["custom_reason_text"] = custom_reason
             else:
                 # Save the selected reason
-                request.session['is_custom_reason'] = False
-                request.session['reason_id'] = int(reason_id)
-            
-            return redirect('tracker:step3_action')
+                request.session["is_custom_reason"] = False
+                request.session["reason_id"] = int(reason_id)
 
-    return render(request, 'tracker/step2_reason.html', {
-        'form': form,
-        'mood': mood,
-        'total_options': total_options,
-    })
+            return redirect("tracker:step3_action")
+
+    return render(
+        request,
+        "tracker/step2_reason.html",
+        {
+            "form": form,
+            "mood": mood,
+            "total_options": total_options,
+        },
+    )
 
 
 @login_required
 def step3_action(request):
     """Step 3: User selects an action to try"""
-    mood = request.session.get('mood')
-    reason_id = request.session.get('reason_id')
-    is_custom_reason = request.session.get('is_custom_reason', False)
-    custom_reason_text = request.session.get('custom_reason_text', '')
-    
+    mood = request.session.get("mood")
+    reason_id = request.session.get("reason_id")
+    is_custom_reason = request.session.get("is_custom_reason", False)
+    custom_reason_text = request.session.get("custom_reason_text", "")
+
     if not mood:
         messages.error(request, "Please start from the beginning.")
-        return redirect('tracker:step1_mood')
+        return redirect("tracker:step1_mood")
 
     # For GET request - prepare smart action selection
-    if request.method == 'GET' and not is_custom_reason and reason_id:
+    if request.method == "GET" and not is_custom_reason and reason_id:
         reason = Reason.objects.get(id=reason_id)
 
         # Get actions related to this reason
         all_actions = reason.actions.all()
 
         # Group actions by category
-        action_categories = ['rest', 'social', 'activity', 'mindfulness', 'creative', 'other']
+        action_categories = [
+            "rest",
+            "social",
+            "activity",
+            "mindfulness",
+            "creative",
+            "other",
+        ]
         selected_actions = []
 
         for category in action_categories:
-            if category == 'other':
+            if category == "other":
                 # handled by form, always include "Other" option
                 continue
 
             category_actions = all_actions.filter(category=category)
             count = category_actions.count()
-            
+
             if count >= 2:
                 # Randomly select 2 actions from categories with 2 or more actions
                 action_list = list(category_actions)
@@ -181,30 +194,31 @@ def step3_action(request):
             reason_id=reason_id,
             is_custom=is_custom_reason,
             custom_queryset=selected_actions,
-            mood_value=mood
+            mood_value=mood,
         )
 
     else:
         # POST request - process form submission
-        form = Step3ActionForm(request.POST or None,
-                               reason_id=reason_id,
-                               is_custom=is_custom_reason,
-                               mood_value=mood
+        form = Step3ActionForm(
+            request.POST or None,
+            reason_id=reason_id,
+            is_custom=is_custom_reason,
+            mood_value=mood,
         )
 
-        if request.method == 'POST' and form.is_valid():
-            action_id = form.cleaned_data.get('action')
-            custom_action = form.cleaned_data.get('custom_action')
-            
+        if request.method == "POST" and form.is_valid():
+            action_id = form.cleaned_data.get("action")
+            custom_action = form.cleaned_data.get("custom_action")
+
             # Create the mood entry
             reason = None
             if not is_custom_reason and reason_id:
                 reason = Reason.objects.get(id=reason_id)
-            
+
             action = None
-            notes = ''
-            
-            if action_id == 'custom':
+            notes = ""
+
+            if action_id == "custom":
                 notes = f"Custom action: {custom_action}"
                 if is_custom_reason:
                     notes = f"Custom reason: {custom_reason_text}\n{notes}"
@@ -212,33 +226,29 @@ def step3_action(request):
                 action = Action.objects.get(id=int(action_id))
                 if is_custom_reason:
                     notes = f"Custom reason: {custom_reason_text}"
-            
+
             mood_entry = MoodEntry.objects.create(
-                user=request.user,
-                mood=mood,
-                reason=reason,
-                action=action,
-                notes=notes
+                user=request.user, mood=mood, reason=reason, action=action, notes=notes
             )
-            
+
             # Clear session data
-            for key in ['mood', 'reason_id', 'is_custom_reason', 'custom_reason_text']:
+            for key in ["mood", "reason_id", "is_custom_reason", "custom_reason_text"]:
                 if key in request.session:
                     del request.session[key]
-            
+
             # Save the entry ID for feedback later
-            request.session['last_mood_entry_id'] = mood_entry.id
-            
+            request.session["last_mood_entry_id"] = mood_entry.id
+
             messages.success(request, "Your mood has been recorded!")
-            return redirect('tracker:dashboard')
+            return redirect("tracker:dashboard")
 
     context = {
-        'form': form,
-        'mood': mood,
-        'is_custom_reason': is_custom_reason,
-        'custom_reason_text': custom_reason_text if is_custom_reason else None,
+        "form": form,
+        "mood": mood,
+        "is_custom_reason": is_custom_reason,
+        "custom_reason_text": custom_reason_text if is_custom_reason else None,
     }
-    return render(request, 'tracker/step3_action.html', context)
+    return render(request, "tracker/step3_action.html", context)
 
 
 # Dashboard view
@@ -246,7 +256,9 @@ def step3_action(request):
 def dashboard(request):
     """Enhanced dashboard with category statistics"""
     # Get all entries for the user
-    entries = MoodEntry.objects.filter(user=request.user).select_related('reason', 'action')
+    entries = MoodEntry.objects.filter(user=request.user).select_related(
+        "reason", "action"
+    )
     total_entries = entries.count()
 
     # Get statistics by category (only if there are entries)
@@ -268,7 +280,7 @@ def dashboard(request):
             reasons_stats = (
                 category_entries.values("reason__text", "reason__mood_type")
                 .annotate(count=Count("id"), avg_mood=Avg("mood"))
-                .order_by("-count")[:3] # Show top 3 reasons per category
+                .order_by("-count")[:3]  # Show top 3 reasons per category
             )
 
             # Overall category stats
@@ -278,18 +290,32 @@ def dashboard(request):
                 positive_count=Count("id", filter=Q(mood__gte=4)),
             )
 
-            positive_percentage = (overall['positive_count'] / overall['total'] * 100) if overall['total'] > 0 else 0
+            positive_percentage = (
+                (overall["positive_count"] / overall["total"] * 100)
+                if overall["total"] > 0
+                else 0
+            )
 
-            category_stats.append({
-                "name": category,
-                "display_name": dict(Reason.CATEGORY_CHOICES).get(category, category),
-                "total_entries": overall["total"],
-                "avg_mood": round(overall["avg_mood"], 1) if overall["avg_mood"] else 0,
-                "positive_percentage": round(positive_percentage, 1),
-                "top_reasons": reasons_stats,
-                "icon": get_category_icon(category),
-                "avg_mood_percentage": round((overall["avg_mood"] / 5) * 100, 1) if overall["avg_mood"] else 0,
-            })
+            category_stats.append(
+                {
+                    "name": category,
+                    "display_name": dict(Reason.CATEGORY_CHOICES).get(
+                        category, category
+                    ),
+                    "total_entries": overall["total"],
+                    "avg_mood": (
+                        round(overall["avg_mood"], 1) if overall["avg_mood"] else 0
+                    ),
+                    "positive_percentage": round(positive_percentage, 1),
+                    "top_reasons": reasons_stats,
+                    "icon": get_category_icon(category),
+                    "avg_mood_percentage": (
+                        round((overall["avg_mood"] / 5) * 100, 1)
+                        if overall["avg_mood"]
+                        else 0
+                    ),
+                }
+            )
 
         # Sort categories by number of entries (most active first)
         category_stats.sort(key=lambda x: x["total_entries"], reverse=True)
@@ -299,47 +325,63 @@ def dashboard(request):
 
     # Calculate overall average mood
     overall_avg = entries.aggregate(Avg("mood"))["mood__avg"]
-    
+
     # Original statistics
     if total_entries > 0:
-        mood_distribution = entries.values('mood').annotate(count=Count('mood')).order_by('mood')
+        mood_distribution = (
+            entries.values("mood").annotate(count=Count("mood")).order_by("mood")
+        )
         # Fixed actions_feedback query
-        actions_feedback = entries.exclude(
-            action_worked__isnull=True
-        ).values('action__text').annotate(
-            count=Count('id'),
-            success_rate=Avg('action_worked') * 100
-        ).order_by('-success_rate')
+        actions_feedback = (
+            entries.exclude(action_worked__isnull=True)
+            .values("action__text")
+            .annotate(count=Count("id"), success_rate=Avg("action_worked") * 100)
+            .order_by("-success_rate")
+        )
     else:
         mood_distribution = []
         actions_feedback = []
-    
+
     # Check if there's a recent entry that needs feedback
-    last_entry_id = request.session.get('last_mood_entry_id')
+    last_entry_id = request.session.get("last_mood_entry_id")
     feedback_form = None
     entry_for_feedback = None
-    
+
+    print(f"🔍 Dashboard - last_entry_id from session: {last_entry_id}")
+
     if last_entry_id:
         try:
             entry_for_feedback = MoodEntry.objects.get(
-                id=last_entry_id, 
+                id=last_entry_id,
                 user=request.user,
-                action_worked__isnull=True  # Only if not already answered
+                action_worked__isnull=True,  # Only if not already answered
             )
-            # Check if enough time has passed (e.g., 1 hour)
-            time_passed = timezone.now() - entry_for_feedback.created_at
-            if time_passed.total_seconds() > 1800:  # 0.5 hour
-                feedback_form = ActionFeedbackForm(initial={'entry_id': entry_for_feedback.id})
+            print(
+                f"🔍 Found entry: {entry_for_feedback.id}, created: {entry_for_feedback.created_at}"
+            )
+
+            # Only show if no feedback yet AND time has passed
+            if entry_for_feedback.action_worked is None:
+                # Check if enough time has passed (e.g., 1 hour)
+                time_passed = timezone.now() - entry_for_feedback.created_at
+                print(f"🔍 Time passed: {time_passed.total_seconds()} seconds")
+                if time_passed.total_seconds() > 1800:  # 0.5 hour
+                    print(f"🔍✅ Creating feedback form")
+                    feedback_form = ActionFeedbackForm(
+                        initial={"entry_id": entry_for_feedback.id}
+                    )
+                else:
+                    print(f"🔍⏳ Not enough time passed")
         except MoodEntry.DoesNotExist:
             # Clear invalid session key
-            if 'last_mood_entry_id' in request.session:
-                del request.session['last_mood_entry_id']
+            print(f"🔍❌ Entry not found or already has feedback")
+            if "last_mood_entry_id" in request.session:
+                del request.session["last_mood_entry_id"]
 
     context = {
         # New enhanced stats
         "category_stats": category_stats,
         "overall_avg_mood": round(overall_avg, 1) if overall_avg else 0,
-        
         # Original stats
         "entries": recent_entries,
         "recent_entries": recent_entries,
@@ -349,43 +391,47 @@ def dashboard(request):
         "actions_feedback": actions_feedback,
         "feedback_form": feedback_form,
         "entry_for_feedback": entry_for_feedback,
-        
         # New helpful flags
         "is_new_user": total_entries < 3,
         "has_feedback_pending": feedback_form is not None,
     }
 
-    return render(request, 'tracker/dashboard.html', context)
+    return render(request, "tracker/dashboard.html", context)
 
 
 @login_required
 def submit_feedback(request, entry_id):
     """Submit feedback on whether an action worked"""
     entry = get_object_or_404(MoodEntry, id=entry_id, user=request.user)
-    
-    if request.method == 'POST':
+
+    # Prevent multiple feedback submissions
+    if entry.action_worked is not None:
+        messages.warning(request, "Feedback already submitted for this entry.")
+        return redirect("tracker:dashboard")
+
+    if request.method == "POST":
         form = ActionFeedbackForm(request.POST)
         if form.is_valid():
             # Convert string 'True'/'False' to boolean
-            worked_value = form.cleaned_data['action_worked']
-            entry.action_worked = worked_value == 'True' or worked_value is True
+            worked_value = form.cleaned_data["action_worked"]
+            entry.action_worked = worked_value == "True" or worked_value is True
             entry.action_checked_at = timezone.now()
             entry.save()
-            
+
             # Clear the session
-            if 'last_mood_entry_id' in request.session:
-                del request.session['last_mood_entry_id']
-            
+            if "last_mood_entry_id" in request.session:
+                del request.session["last_mood_entry_id"]
+
             messages.success(request, "Thank you for your feedback!")
-    
-    return redirect('tracker:dashboard')
+
+    return redirect("tracker:dashboard")
 
 
 @login_required
 def delete_entry(request, entry_id):
     """Delete a mood entry"""
     entry = get_object_or_404(MoodEntry, id=entry_id, user=request.user)
-    if request.method == 'POST':
+    if request.method == "POST":
         entry.delete()
         messages.success(request, "Entry deleted successfully.")
-    return redirect('tracker:dashboard')
+    return redirect("tracker:dashboard")
