@@ -101,7 +101,7 @@ By tracking moods, reasons, and actions over time, users can start to recognise 
 
 - As a user who never completed a cycle I want incomplete entries to remain in my history with partial data so that I still have record of the initial mood even without outcome
 
-The project's Kanban Board can be viewd [here]()
+The project's Kanban Board can be viewd [here](https://github.com/orgs/Coolafdood/projects/8/views/2)
 
 ### Design Choices
 
