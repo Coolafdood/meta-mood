@@ -5,7 +5,8 @@
 3. Install dependencies
 4. **Run migrations:** `python manage.py migrate`
 5. **Run seeds_data:** `python manage.py seed_data`
-6. Start server: `python manage.py runserver`
+6. **Run collectstatic** `python manage.py collectstatic`
+7. Start server: `python manage.py runserver`
 
 ## When Pulling Updates related to database
 
