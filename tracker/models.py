@@ -22,8 +22,9 @@ class Reason(models.Model):
 
     text = models.CharField(max_length=100)
     mood_type = models.CharField(max_length=10, choices=MOOD_TYPES)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES,
-                                default="other")
+    category = models.CharField(
+        max_length=20, choices=CATEGORY_CHOICES, default="other"
+    )
     is_generic = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -42,7 +43,9 @@ class Action(models.Model):
     ]
 
     text = models.CharField(max_length=100)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="other")
+    category = models.CharField(
+        max_length=20, choices=CATEGORY_CHOICES, default="other"
+    )
     reasons = models.ManyToManyField(Reason, related_name="actions", blank=True)
     is_generic = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -60,21 +63,23 @@ class MoodEntry(models.Model):
         (5, "Excellent"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="mood_entries")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="mood_entries"
+    )
     mood = models.IntegerField(choices=MOOD_CHOICES)
     reason = models.ForeignKey(
         Reason,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="mood_entries"
+        related_name="mood_entries",
     )
     action = models.ForeignKey(
         Action,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="mood_entries"
+        related_name="mood_entries",
     )
     notes = models.TextField(blank=True)
 
@@ -89,7 +94,7 @@ class MoodEntry(models.Model):
     # Helper properties for statistics
     @property
     def day_of_week(self):
-        return self.created_at.strftime('%A')  # Monday, Tuesday, etc.
+        return self.created_at.strftime("%A")  # Monday, Tuesday, etc.
 
     @property
     def week_number(self):
@@ -97,18 +102,18 @@ class MoodEntry(models.Model):
 
     @property
     def month(self):
-        return self.created_at.strftime('%B')  # January, February, etc.
+        return self.created_at.strftime("%B")  # January, February, etc.
 
     @property
     def hour_of_day(self):
         return self.created_at.hour
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['user', 'created_at']),
-            models.Index(fields=['user', 'mood']),
-            models.Index(fields=['created_at']),  # For time-based queries
+            models.Index(fields=["user", "created_at"]),
+            models.Index(fields=["user", "mood"]),
+            models.Index(fields=["created_at"]),  # For time-based queries
         ]
 
     def __str__(self):
