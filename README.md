@@ -27,7 +27,7 @@ python manage.py migrate
 
 
 # team1-Meta_Mood
-[View the Live Project here]()
+**[View the Live Project here](https://metamood-63b673a5590d.herokuapp.com/)**
 
 # Table of Content
 - [User Expeience](#user-experience)
@@ -42,8 +42,7 @@ python manage.py migrate
 - [Testing](#testing)
     - [Bugs](#bugs-known-issues--solutions)
     - [Unresolved Bugs](#unresolved-bugs)
-    - [Tesing User Stories](#testing-user-stories)
-    - [Manual Testing](#manual-testing)
+    - [Tesing User Stories & Manual Testing](#testing-user-stories--manual-testing)
     - [Automated Testing](#automated-testing)
     - [Accessibility](#accessibility)
 - [Deployment](#deployment)
@@ -102,7 +101,7 @@ By tracking moods, reasons, and actions over time, users can start to recognise 
 
 - As a user who never completed a cycle I want incomplete entries to remain in my history with partial data so that I still have record of the initial mood even without outcome
 
-The project's Kanban Board can be viewd [here](https://github.com/orgs/Coolafdood/projects/8/views/2)
+The project's Kanban Board can be viewd **[here](https://github.com/orgs/Coolafdood/projects/8/views/2)**
 
 ### Design Choices
 
@@ -223,7 +222,7 @@ The app helps users understand their emotional patterns and discover what actual
 
 ### Unresolved Bugs
 
-### Testing User Stories / Manual Testing
+### Testing User Stories & Manual Testing
 
 | ID  | Feature          | Test Description      | Steps                             | Expected Result  | Result |
 | --- | ---------------- | --------------------- | --------------------------------- | ---------------- | ------ |
@@ -262,7 +261,7 @@ The project currently includes approximately 35 automated tests covering:
 
 All tests are passing successfully:
 
-1. test_models.py - Database Models [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_models.py)
+1. test_models.py - Database Models **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_models.py)**
 
 | Test                              | What it Checks                                                |
 | --------------------------------- | ------------------------------------------------------------- |
@@ -288,7 +287,7 @@ All tests are passing successfully:
 | `test_step3_form_custom_reason`        | Handles custom reasons correctly       |
 | `test_feedback_form`                   | Feedback form has yes/no options       |
 
-3. test_views.py – Page Loads & User Flow [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_views.py)
+3. test_views.py – Page Loads & User Flow **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_views.py)**
 
 | Test                                  | What it Checks                            |
 | ------------------------------------- | ----------------------------------------- |
@@ -302,7 +301,7 @@ All tests are passing successfully:
 | `test_step2_view_post_custom`         | Step 2 handles "Other" reason             |
 | `test_step3_view_with_valid_data`     | Complete flow creates MoodEntry           |
 
-4. test_statistics.py – Dashboard Calculations [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_statistics.py)
+4. test_statistics.py – Dashboard Calculations **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_statistics.py)**
 
 | Test                                   | What it Checks                                    |
 | -------------------------------------- | ------------------------------------------------- |
@@ -313,7 +312,7 @@ All tests are passing successfully:
 | `test_top_reasons_ordering`            | Orders reasons by frequency                       |
 | `test_recent_entries_ordering`         | Shows newest entries first                        |
 
-5. test_feedback.py – Action Feedback [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_feedback.py)
+5. test_feedback.py – Action Feedback **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_feedback.py)**
 
 | Test                                  | What it Checks                            |
 | ------------------------------------- | ----------------------------------------- |
@@ -344,7 +343,7 @@ Accessibility was considered throughout the design and implementation of the app
 
 ## Deployment
 
-The website was deployed to Heroku and can be found **[here](https://animalrescue-69ba2deac37d.herokuapp.com/)**.
+The website was deployed to Heroku and can be found **[here](https://metamood-63b673a5590d.herokuapp.com/)**.
 
 - Heroku is a cloud platform that lets developers create, deploy, monitor and manage apps.
 - You will need a Heroku log-in to be able to deploy a website to Heroku.
@@ -374,12 +373,3 @@ The website was deployed to Heroku and can be found **[here](https://animalrescu
 - Scroll to the bottom and click 'Deploy Branch' and your project will be deployed!
 
 ## Maintenance & Updates
-
-## Credits
-
-### Content
-
-### Media
-
-
-Show folder layout clearly.
