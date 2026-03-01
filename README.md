@@ -201,6 +201,85 @@ The app helps users understand their emotional patterns and discover what actual
 
 ### Automated Testing
 
+**Test Results**
+
+The project currently includes approximately 35 automated tests covering:
+
+- Models
+- Forms
+- Views
+- Statistics
+- Feedback
+
+All tests are passing successfully:
+
+1. test_models.py - Database Models [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_models.py)
+
+| Test                              | What it Checks                                                |
+| --------------------------------- | ------------------------------------------------------------- |
+| `test_reason_creation`            | Reasons are created with correct fields (mood_type, category) |
+| `test_action_creation`            | Actions are created with correct fields                       |
+| `test_action_reason_relationship` | Many-to-many link between actions and reasons works           |
+| `test_mood_entry_creation`        | Mood entries save all fields correctly                        |
+| `test_mood_entry_str_method`      | String representation of mood entry works                     |
+| `test_helper_properties`          | `day_of_week`, `month`, `hour` properties work                |
+
+2. test_forms.py - Form Validation [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_forms.py)
+
+| Test                                   | What it Checks                         |
+| -------------------------------------- | -------------------------------------- |
+| `test_step1_form_valid`                | Step 1 accepts valid mood (1–5)        |
+| `test_step1_form_invalid`              | Step 1 rejects invalid mood (e.g. 6)   |
+| `test_step2_form_positive_mood`        | Shows only positive reasons for mood 5 |
+| `test_step2_form_negative_mood`        | Shows only negative reasons for mood 1 |
+| `test_step2_form_neutral_mood`         | Shows only neutral reasons for mood 3  |
+| `test_step2_form_with_custom_queryset` | Form accepts custom reason list        |
+| `test_step3_form_for_positive_reason`  | Shows correct label for positive mood  |
+| `test_step3_form_for_negative_reason`  | Shows correct label for negative mood  |
+| `test_step3_form_custom_reason`        | Handles custom reasons correctly       |
+| `test_feedback_form`                   | Feedback form has yes/no options       |
+
+3. test_views.py – Page Loads & User Flow [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_views.py)
+
+| Test                                  | What it Checks                            |
+| ------------------------------------- | ----------------------------------------- |
+| `test_index_view`                     | Landing page loads                        |
+| `test_index_view_anonymous`           | Landing page works for anonymous users    |
+| `test_step1_view_get`                 | Step 1 page loads with form               |
+| `test_step1_view_post`                | Step 1 form submits and sets session      |
+| `test_step2_view_redirect_if_no_mood` | Redirects to Step 1 if no mood in session |
+| `test_step2_view_with_mood`           | Step 2 loads when mood exists in session  |
+| `test_step2_view_post_reason`         | Step 2 saves reason to session            |
+| `test_step2_view_post_custom`         | Step 2 handles "Other" reason             |
+| `test_step3_view_with_valid_data`     | Complete flow creates MoodEntry           |
+
+4. test_statistics.py – Dashboard Calculations [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_statistics.py)
+
+| Test                                   | What it Checks                                    |
+| -------------------------------------- | ------------------------------------------------- |
+| `test_total_entries_count`             | Counts total entries correctly                    |
+| `test_average_mood_calculation`        | Calculates average mood correctly                 |
+| `test_positive_percentage_calculation` | Calculates percentage of positive moods correctly |
+| `test_category_filtering_threshold`    | Only shows categories with enough entries         |
+| `test_top_reasons_ordering`            | Orders reasons by frequency                       |
+| `test_recent_entries_ordering`         | Shows newest entries first                        |
+
+5. test_feedback.py – Action Feedback [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_feedback.py)
+
+| Test                                  | What it Checks                            |
+| ------------------------------------- | ----------------------------------------- |
+| `test_feedback_not_shown_immediately` | Feedback form does not appear immediately |
+| `test_feedback_submission_yes`        | "Yes" feedback saves correctly            |
+| `test_feedback_submission_no`         | "No" feedback saves correctly             |
+| `test_feedback_only_once`             | Feedback cannot be submitted twice        |
+| `test_feedback_wrong_user`            | Users cannot submit feedback for others   |
+| `test_delete_entry`                   | Users can delete their own entries        |
+| `test_delete_entry_wrong_user`        | Users cannot delete others' entries       |
+
+**Running tests**
+
+To run all automated tests, use `python manage.py test tracker`
+
 ### Accessibility
 
 ## Deployment
