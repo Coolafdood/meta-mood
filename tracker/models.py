@@ -108,6 +108,52 @@ class MoodEntry(models.Model):
     def hour_of_day(self):
         return self.created_at.hour
 
+    @property
+    def custom_reason_text(self):
+        """Extract custom reason from notes"""
+        if self.reason:
+            return None
+        if not self.notes:
+            return None
+        
+        import re
+        # Look for "Custom reason: XXXX" pattern
+        match = re.search(r'Custom reason: (.*?)(\n|$)', self.notes)
+        if match:
+            return match.group(1)
+        return None
+
+    @property
+    def custom_action_text(self):
+        """Extract custom action from notes"""
+        if self.action and self.action.text != "Custom action":
+            return None
+        if not self.notes:
+            return None
+       
+        import re
+        # Look for "Custom action: XXXX" pattern
+        match = re.search(r'Custom action: (.*?)(\n|$)', self.notes)
+        if match:
+            return match.group(1)
+        return None
+ 
+    @property
+    def display_reason(self):
+        """Get reason text (either from reason or custom)"""
+        if self.reason:
+            return self.reason.text
+        custom = self.custom_reason_text
+        return custom if custom else "Custom reason"
+    
+    @property
+    def display_action(self):
+        """Get action text (either from action or custom)"""
+        if self.action and self.action.text != "Custom action":
+            return self.action.text
+        custom = self.custom_action_text
+        return custom if custom else "Custom action"
+
     class Meta:
         ordering = ["-created_at"]
         indexes = [

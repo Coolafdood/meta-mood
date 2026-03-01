@@ -15,39 +15,40 @@
     </div>
     {% endif %}
 
-    <!-- Feedback Card (if needed) -->
-    {% if has_feedback_pending and entry_for_feedback %}
+<!-- Feedback Cards (if needed) -->
+{% if has_feedback_pending %}
+    {% for item in feedback_forms %}
     <div class="card mb-4 border-warning">
         <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">⏰ Time for a Check-in!</h5>
+            <h5 class="mb-0">⏰ Check-in #{{ forloop.counter }}</h5>
         </div>
         <div class="card-body">
-            <p>You recorded this mood {{ entry_for_feedback.created_at|timesince }} ago:</p>
+            <p>You recorded this mood {{ item.entry.created_at|date:"M d, H:i" }} ({{ item.entry.created_at|timesince }} ago)</p>
             <div class="row mb-3">
                 <div class="col-md-3">
                     <strong>Mood:</strong> 
-                    <span class="badge {% if entry_for_feedback.mood >= 4 %}bg-success{% elif entry_for_feedback.mood >= 3 %}bg-warning{% else %}bg-danger{% endif %}">
-                        {{ entry_for_feedback.get_mood_display }}
+                    <span class="badge {% if item.entry.mood >= 4 %}bg-success{% elif item.entry.mood >= 3 %}bg-warning{% else %}bg-danger{% endif %}">
+                        {{ item.entry.get_mood_display }}
                     </span>
                 </div>
-                {% if entry_for_feedback.reason %}
+                {% if item.entry.reason %}
                 <div class="col-md-4">
-                    <strong>Reason:</strong> {{ entry_for_feedback.reason.text }}
+                    <strong>Reason:</strong> {{ item.entry.reason.text }}
                 </div>
                 {% endif %}
-                {% if entry_for_feedback.action %}
+                {% if item.entry.action %}
                 <div class="col-md-4">
-                    <strong>Action:</strong> {{ entry_for_feedback.action.text }}
+                    <strong>Action:</strong> {{ item.entry.action.text }}
                 </div>
                 {% endif %}
             </div>
             
-            <form method="post" action="{% url 'tracker:submit_feedback' entry_for_feedback.id %}" class="mt-3">
+            <form method="post" action="{% url 'tracker:submit_feedback' item.entry.id %}" class="mt-3">
                 {% csrf_token %}
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Did this action help you feel better?</label>
+                    <label class="form-label fw-bold">{{ item.form.action_worked.label }}</label>
                     <div class="btn-group" role="group">
-                        {% for radio in feedback_form.action_worked %}
+                        {% for radio in item.form.action_worked %}
                         <div class="form-check form-check-inline me-3">
                             {{ radio.tag }}
                             <label class="form-check-label" for="{{ radio.id_for_label }}">
@@ -61,7 +62,8 @@
             </form>
         </div>
     </div>
-    {% endif %}
+    {% endfor %}
+{% endif %}
 
     <!-- Overview Stats - Make them more prominent for new users -->
     <div class="row mb-4">
@@ -200,7 +202,7 @@
                             <th>Reason</th>
                             <th>Action</th>
                             <th>Feedback</th>
-                            <th>Action</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -219,8 +221,8 @@
                                     -
                                 {% endif %}
                             </td>
-                            <td>{{ entry.reason.text|default:"Custom reason"|truncatechars:25 }}</td>
-                            <td>{{ entry.action.text|default:"-"|truncatechars:20 }}</td>
+                            <td>{{ entry.display_reason|truncatechars:25 }}</td>
+                            <td>{{ entry.display_action|truncatechars:20 }}</td>
                             <td>
                                 {% if entry.action_worked is True %}
                                     <span class="badge bg-success">✅ Helped</span>
