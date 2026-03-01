@@ -167,6 +167,34 @@ The app helps users understand their emotional patterns and discover what actual
 
 ## Technologies Used
 
+**1. Languages:**
+- Python - the core programming language used to build the application.
+- HTML5 - the standard markup language for structuring content on the web.
+- CSS 
+- JavaScript - added interactivity and client-side behaviour.
+
+**2. Frameworks & Libraries:**
+- Django - the main web framework used to manage models, views, templates, authentication, and admin functionality.
+- Django Allauth - user authentication, signup, and login with social account support.
+
+**3. Database & Deployment:**
+- PostgreSQL - relational database used in production.
+- psycopg2 - PostgreSQL database adapter for Python/Django.
+- Gunicorn - Python WSGI HTTP server for running Django apps in production.
+- Whitenoise – serves static files efficiently in Django without extra servers.
+- dj-database-url – allows database configuration via environment variables (useful for deployment).
+- [Heroku](https://www.heroku.com/) - platform-as-a-service (PaaS) used to deploy, manage, and scale the live application.
+
+**Version Control:**
+- Git – version control system to track and manage code changes.
+- GitHub – remote repository hosting, project board, and collaboration tool.
+
+## Resources & Tools
+
+- [mermaidchart](https://www.mermaidchart.com/) to draw Entity-Relationship Diagram.
+- [Open AI](https://openai.com/chatgpt/overview/) to create / review the content for spelling, grammar and consistency; to ask for suggestions on how to solve certain problems.
+- [deepseek](https://www.deepseek.com/en) to solve and explain certain problems (eg. silent validation errors on registration form).
+
 ## Code
 
 ## Testing
@@ -195,9 +223,30 @@ The app helps users understand their emotional patterns and discover what actual
 
 ### Unresolved Bugs
 
-### Testing User Stories
+### Testing User Stories / Manual Testing
 
-### Manual Testing
+| ID  | Feature          | Test Description      | Steps                             | Expected Result  | Result |
+| --- | ---------------- | --------------------- | --------------------------------- | ---------------- | ------ |
+| T1  | Mood Selection   | User selects a mood   | Select mood → Click Next          | Next page loads  |  Pass  |
+| T2  | Mood Selection   | Mood is required      | Click Next without selecting mood | Nothing happens  |  Pass  |
+| T3  | Reason Selection | Reasons are displayed | Go to Step 2                      | Reasons visible  |  Pass  | 
+| T5  | Reason Selection | Other reason          | Select "Other"                    | Saved correctly  |  Pass  |
+| T6  | Action Selection | Actions displayed     | Go to Step 3                      | Actions visible  |  Pass  |
+| T7  | Action Selection | Select action         | Select action → Save              | Entry saved      |  Pass  |
+| T8  | Dashboard        | Entries visible       | Open dashboard                    | Entries shown    |  Pass  |
+| T9  | Dashboard        | New entry visible     | Add entry → Dashboard             | Entry visible    |    Pass|
+| T10 | Feedback         | Feedback question     | Wait → Return                     | Question visible |  Pass  |
+| T11 | Feedback         | Yes feedback          | Click Yes                         | Saved            |  Pass  |
+| T12 | Feedback         | No feedback           | Click No                          | Saved            |  Pass  |
+| T13 | Navigation       | Step navigation       | Complete steps                    | Works correctly  |  Pass  |
+| T14 | Colours          | Mood colours          | View moods                        | Colours correct  |        |
+| T15 | Emojis           | Mood emojis           | View moods                        | Emojis visible   |        |
+| T16 | Mobile           | Responsive layout     | Open on phone                     | Layout works     |        |
+| T17 | 404 Page         | Invalid URL           | Go to wrong URL                   | 404 page shown   |        |
+| T18 | 500 Page         | Server error          | Trigger error                     | 500 page shown   |        |
+| T19 | Empty Dashboard  | No entries            | Open dashboard                    | Message shown    |  Pass  |
+| T20 | Delete Entry     | Delete entry          | Click delete                      | Entry removed    |  Pass  |
+
 
 ### Automated Testing
 
@@ -282,7 +331,47 @@ To run all automated tests, use `python manage.py test tracker`
 
 ### Accessibility
 
+Accessibility was considered throughout the design and implementation of the application to ensure it is usable by a wide range of users.
+
+- **Semantic HTML** is used to provide meaningful structure for screen readers and assistive technologies.
+- **Responsive design** implemented with Tailwind CSS ensures the interface works across different screen sizes and devices.
+- **Sufficient colour contrast** is maintained between text, backgrounds, and interactive elements to improve readability.
+- **Clear visual hierarchy** using consistent headings, spacing, and font sizes helps users easily navigate content.
+- **Keyboard accessibility** is supported through standard HTML controls (links, buttons, forms) and visible focus states.
+- **Alternative text** is provided for animal images, with meaningful alt attributes based on animal names.
+- **Form inputs** include labels or accessible attributes (such as aria-label) to support screen reader users.
+- **Motion and effects** are kept subtle to avoid unnecessary visual distraction.
+
 ## Deployment
+
+The website was deployed to Heroku and can be found **[here](https://animalrescue-69ba2deac37d.herokuapp.com/)**.
+
+- Heroku is a cloud platform that lets developers create, deploy, monitor and manage apps.
+- You will need a Heroku log-in to be able to deploy a website to Heroku.
+- Once you have logged into Heroku:
+- Click 'New' > 'Create new app'
+- Choose a unique name, choose your region and press 'Create app'
+- Click on 'Settings' and then 'Reveal Config Vars'
+- Add a key of 'DATABASE_URL' - the value will be the URL you were emailed when creating your database.
+- Add a key of 'SECRET_KEY' - the value will be any random secret key (google 'secret key generator' and use it to generate a random string of numbers, letters and characters)
+- In your terminal, type the code you will need to install project requirements:
+  - pip3 install gunicorn
+  - pip install whitenoise
+  - pip3 install -r requirements.txt
+  - pip3 freeze --local > requirements.txt
+- Create an 'env.py' file at the root directory which contains the following:
+  - import os
+  - os.environ["DATABASE_URL"]='CI database URL'
+  - os.environ["SECRET_KEY"]=" Your secret key"
+- Create a file at the root directory called Procfile. In this file enter: "web: gunicorn my_project.wsgi" (without the quotes)
+- Create a file at the root directory called runtime.txt. In this file enter your Python version (`python -V`)
+- In settings.py, set DEBUG to False.
+- YOU SHOULD ALWAYS SET DEBUG TO FALSE BEFORE DEPLOYING FOR SECURITY
+- Add ",'.herokuapp.com' " (without the double quotes) to the ALLOWED_HOSTS list in settings.py
+- Add, commit and push your code.
+- Go back to Heroku, click on the 'Deploy' tab.
+- Connect your project to GitHub.
+- Scroll to the bottom and click 'Deploy Branch' and your project will be deployed!
 
 ## Maintenance & Updates
 
@@ -292,90 +381,5 @@ To run all automated tests, use `python manage.py test tracker`
 
 ### Media
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-A human-centred dashboard that visualises emotional wellbeing trends using interactive frontend storytelling.
-
-Problem Statement
-
-What human issue are you solving?
-
-Target Users
-
-Be specific:
-
-Students?
-
-NHS workers?
-
-Small businesses?
-
-Young adults?
-
-Local community?
-
-Core Features
-
-Frontend interaction
-
-Data insight
-
-Emotional UX
-
-Optional backend support
-
-Tech Stack
-
-Frontend:
-
-React / JS / HTML/CSS
-
-Data:
-
-Pandas
-
-Matplotlib / Plotly
-
-ML (if applicable)
-
-Backend (optional):
-
-Flask / Django / FastAPI
-
-Ethics & Data Responsibility
-
-This is important in this hackathon.
-Add:
-
-Data source
-
-Privacy considerations
-
-Bias mitigation
-
-Accessibility
-
-Project Structure
 
 Show folder layout clearly.
