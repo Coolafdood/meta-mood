@@ -192,7 +192,7 @@ The app helps users understand their emotional patterns and discover what actual
 
 - [mermaidchart](https://www.mermaidchart.com/) to draw Entity-Relationship Diagram.
 - [Open AI](https://openai.com/chatgpt/overview/) to create / review the content for spelling, grammar and consistency; to ask for suggestions on how to solve certain problems.
-- [deepseek](https://www.deepseek.com/en) to solve and explain certain problems (eg. silent validation errors on registration form).
+- [deepseek](https://www.deepseek.com/en) to solve and explain certain problems.
 
 ## Code
 
@@ -200,25 +200,40 @@ The app helps users understand their emotional patterns and discover what actual
 
 ### Bugs, Known Issues & Solutions
 
-#### Mood Label Mismatch
+1. Mood Label Mismatch
 **Problem:** Step 3 showed "What might help you feel better?" even for excellent moods, which felt inappropriate.
 
 **Solution:** Added dynamic labels based on mood value (1-5) with customized messages for each mood level.
 
-#### Overwhelming Number of Options
+2. Overwhelming Number of Options
 **Problem:** Users faced 20+ reasons/actions to choose from, causing decision fatigue.
 
 **Solution:** Implemented smart filtering that shows max 12 options (2 per category) with random selection for variety.
 
-#### Feedback Form Not Appearing
+3. Feedback Form Not Appearing
 **Problem:** Users never saw the follow-up question about whether actions helped.
 
 **Solution:** Fixed timing logic in dashboard view and ensured session data persists correctly between steps.
 
-#### Form Parameters Errors
+4. Form Parameters Errors
 **Problem:** `BaseForm.__init__() got an unexpected keyword argument` errors when passing custom querysets.
 
 **Solution:** Properly popped all custom parameters before calling `super().__init__()` in form classes.
+
+5. Feedback Form Not Showing for Old Entries
+**Problem:** Feedback form only appeared for the most recent entry. Making a new entry would hide previous feedback opportunities.
+
+**Fix:** Changed from session-based to database query that checks ALL entries needing feedback (action exists, no feedback yet, time passed).
+
+6. Custom Actions Not Trackable
+**Problem:** Custom actions ("Something else") were only saved in notes, not linked to an Action object. They didn't appear in tables and couldn't receive feedback.
+
+**Fix:** Created generic "Custom action" object and linked it to entries while preserving original text in notes.
+
+7. Custom Reason/Action Text Mix-up
+**Problem:** When users entered both custom reason AND custom action, both texts were saved in the same notes field, causing them to appear in both columns.
+
+**Fix:** Added model properties (display_reason, display_action) to properly extract and separate custom texts.
 
 ### Unresolved Bugs
 
@@ -272,7 +287,7 @@ All tests are passing successfully:
 | `test_mood_entry_str_method`      | String representation of mood entry works                     |
 | `test_helper_properties`          | `day_of_week`, `month`, `hour` properties work                |
 
-2. test_forms.py - Form Validation [click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_forms.py)
+2. test_forms.py - Form Validation **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_forms.py)**
 
 | Test                                   | What it Checks                         |
 | -------------------------------------- | -------------------------------------- |
