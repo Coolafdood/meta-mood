@@ -156,6 +156,12 @@ A 3-step mood tracking application that helps users log their emotions, identify
 
 The app helps users understand their emotional patterns and discover what actually improves their mood!
 
+`User selects mood (1-5) 
+    → determines mood_type (negative/neutral/positive)
+        → shows reasons with that mood_type
+            → User selects specific reason
+                → Shows ONLY actions linked to THAT reason`
+
 ## Features
 
 ## Technologies Used
