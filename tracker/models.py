@@ -115,10 +115,11 @@ class MoodEntry(models.Model):
             return None
         if not self.notes:
             return None
-        
+
         import re
+
         # Look for "Custom reason: XXXX" pattern
-        match = re.search(r'Custom reason: (.*?)(\n|$)', self.notes)
+        match = re.search(r"Custom reason: (.*?)(\n|$)", self.notes)
         if match:
             return match.group(1)
         return None
@@ -130,14 +131,15 @@ class MoodEntry(models.Model):
             return None
         if not self.notes:
             return None
-       
+
         import re
+
         # Look for "Custom action: XXXX" pattern
-        match = re.search(r'Custom action: (.*?)(\n|$)', self.notes)
+        match = re.search(r"Custom action: (.*?)(\n|$)", self.notes)
         if match:
             return match.group(1)
         return None
- 
+
     @property
     def display_reason(self):
         """Get reason text (either from reason or custom)"""
@@ -145,7 +147,7 @@ class MoodEntry(models.Model):
             return self.reason.text
         custom = self.custom_reason_text
         return custom if custom else "Custom reason"
-    
+
     @property
     def display_action(self):
         """Get action text (either from action or custom)"""
