@@ -1,62 +1,475 @@
+<!-- tracker/templates/tracker/step1_mood.html -->
 {% extends 'tracker/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="step-indicator">
-            <div class="step active">1</div>
-            <div class="step">2</div>
-            <div class="step">3</div>
+<div class="container">
+    <div class="auth-container" style="max-width: 600px;">
+        <!-- Floating background shapes -->
+        <div class="auth-shapes" style="opacity: 0.15;">
+            <div class="auth-shape auth-shape-1"></div>
+            <div class="auth-shape auth-shape-2"></div>
+            <div class="auth-shape auth-shape-3"></div>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator-wrapper">
+            <div class="step-indicator">
+                <div class="step-item">
+                    <div class="step-circle active">
+                        <span>1</span>
+                    </div>
+                    <span class="step-label active-label">Mood</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-item">
+                    <div class="step-circle">
+                        <span>2</span>
+                    </div>
+                    <span class="step-label">Drivers</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-item">
+                    <div class="step-circle">
+                        <span>3</span>
+                    </div>
+                    <span class="step-label">Action</span>
+                </div>
+            </div>
         </div>
         
-        <div class="card">
-            <div class="card-header">
-                <h3 class="text-center">Step 1: How are you feeling?</h3>
+        <!-- Main Card -->
+        <div class="mood-card">
+            <div class="mood-card-header">
+                <div class="mood-icon-wrapper">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <h2>How are you feeling?</h2>
+                <p class="text-muted">Select the option that best describes your current mood</p>
             </div>
-            <div class="card-body">
-                <form method="post">
+            
+            <div class="mood-card-body">
+                <form method="post" id="mood-form">
                     {% csrf_token %}
                     
-                    {% for radio in form.mood %}
-                        <div class="form-check mood-option mood-{{ radio.data.value }}" onclick="this.querySelector('input').click();">
-                            {{ radio.tag }}
-                            <label class="form-check-label w-100" for="{{ radio.id_for_label }}">
-                                {{ radio.choice_label }}
+                    <div class="mood-options-grid">
+                        {% for radio in form.mood %}
+                        <div class="mood-option-card mood-{{ radio.data.value }}" onclick="selectMood(this, '{{ radio.data.value }}')">
+                            <input type="radio" name="{{ form.mood.name }}" value="{{ radio.data.value }}" 
+                                   id="{{ radio.id_for_label }}" {% if radio.data.selected %}checked{% endif %}>
+                            <label for="{{ radio.id_for_label }}">
+                                <span class="mood-emoji">
+                                    {% if radio.data.value == '1' %}😭
+                                    {% elif radio.data.value == '2' %}😞
+                                    {% elif radio.data.value == '3' %}😐
+                                    {% elif radio.data.value == '4' %}🙂
+                                    {% elif radio.data.value == '5' %}😁
+                                    {% endif %}
+                                </span>
+                                <span class="mood-text">{{ radio.choice_label }}</span>
                             </label>
                         </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                     
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">Next</button>
+                    <div class="mood-actions">
+                        <button type="submit" class="btn-next" id="next-button" disabled>
+                            <span class="btn-text">Continue to Drivers</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
+
+        <!-- Quote for inspiration -->
+        <div class="mood-quote">
+            <i class="fas fa-quote-left"></i>
+            <p>The first step to understanding your emotions is acknowledging them.</p>
+        </div>
     </div>
 </div>
 
+<script>
+function selectMood(element, value) {
+    // Remove selected class from all mood cards
+    document.querySelectorAll('.mood-option-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked card
+    element.classList.add('selected');
+    
+    // Check the radio button
+    const radio = element.querySelector('input[type="radio"]');
+    if (radio) {
+        radio.checked = true;
+    }
+    
+    // Enable the next button
+    document.getElementById('next-button').disabled = false;
+    
+    // Add animation
+    element.style.animation = 'none';
+    element.offsetHeight; // Trigger reflow
+    element.style.animation = 'selectPulse 0.5s ease';
+}
+
+// Auto-select if already selected (for form validation errors)
+document.addEventListener('DOMContentLoaded', function() {
+    const selectedRadio = document.querySelector('input[type="radio"]:checked');
+    if (selectedRadio) {
+        const parentCard = selectedRadio.closest('.mood-option-card');
+        if (parentCard) {
+            parentCard.classList.add('selected');
+            document.getElementById('next-button').disabled = false;
+        }
+    }
+});
+</script>
+
 <style>
-    .form-check {
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        transition: transform 0.2s;
+/* Step Indicator */
+.step-indicator-wrapper {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 60px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    z-index: 2;
+}
+
+.step-circle {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border: 3px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #a0aec0;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.step-circle.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.step-line {
+    flex: 1;
+    height: 3px;
+    background: #e2e8f0;
+    margin: 0 0.5rem;
+    position: relative;
+    top: -12px;
+}
+
+.step-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a0aec0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.active-label {
+    color: #667eea;
+}
+
+/* Mood Card */
+.mood-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 2.5rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.mood-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 300% 100%;
+    animation: gradientMove 5s ease infinite;
+}
+
+.mood-card-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.mood-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    border: 3px solid rgba(102, 126, 234, 0.2);
+}
+
+.mood-icon-wrapper i {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.mood-card-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2d3748 0%, #667eea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+/* Mood Options Grid */
+.mood-options-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.mood-option-card {
+    cursor: pointer;
+    border-radius: 16px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.mood-option-card input {
+    display: none;
+}
+
+.mood-option-card label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    margin: 0;
+    width: 100%;
+}
+
+.mood-emoji {
+    font-size: 2rem;
+    min-width: 50px;
+    text-align: center;
+}
+
+.mood-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    flex: 1;
+}
+
+/* Mood-specific colors */
+.mood-1 {
+    background: linear-gradient(135deg, #ff6b6b20 0%, #ff6b6b40 100%);
+    border-left: 5px solid #ff6b6b;
+}
+.mood-1.selected {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(255, 107, 107, 0.3);
+}
+.mood-1.selected .mood-text { color: white; }
+
+.mood-2 {
+    background: linear-gradient(135deg, #ffa06b20 0%, #ffa06b40 100%);
+    border-left: 5px solid #ffa06b;
+}
+.mood-2.selected {
+    background: linear-gradient(135deg, #ffa06b 0%, #ffb085 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(255, 160, 107, 0.3);
+}
+.mood-2.selected .mood-text { color: white; }
+
+.mood-3 {
+    background: linear-gradient(135deg, #ffd93d20 0%, #ffd93d40 100%);
+    border-left: 5px solid #ffd93d;
+}
+.mood-3.selected {
+    background: linear-gradient(135deg, #ffd93d 0%, #ffe170 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(255, 217, 61, 0.3);
+}
+.mood-3.selected .mood-text { color: #2d3748; }
+
+.mood-4 {
+    background: linear-gradient(135deg, #6bcf7f20 0%, #6bcf7f40 100%);
+    border-left: 5px solid #6bcf7f;
+}
+.mood-4.selected {
+    background: linear-gradient(135deg, #6bcf7f 0%, #8bd69c 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(107, 207, 127, 0.3);
+}
+.mood-4.selected .mood-text { color: white; }
+
+.mood-5 {
+    background: linear-gradient(135deg, #4a9eff20 0%, #4a9eff40 100%);
+    border-left: 5px solid #4a9eff;
+}
+.mood-5.selected {
+    background: linear-gradient(135deg, #4a9eff 0%, #7ab5ff 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(74, 158, 255, 0.3);
+}
+.mood-5.selected .mood-text { color: white; }
+
+.mood-option-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Next Button */
+.mood-actions {
+    text-align: center;
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-next:not(:disabled) {
+    animation: pulse 2s infinite;
+}
+
+.btn-next:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #cbd5e0;
+    box-shadow: none;
+}
+
+.btn-next i {
+    transition: transform 0.3s ease;
+}
+
+.btn-next:not(:disabled):hover i {
+    transform: translateX(5px);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2); }
+    50% { box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4); }
+    100% { box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2); }
+}
+
+@keyframes selectPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Mood Quote */
+.mood-quote {
+    text-align: center;
+    margin-top: 2rem;
+    color: #718096;
+    font-style: italic;
+    position: relative;
+    padding: 1rem;
+}
+
+.mood-quote i {
+    color: #667eea;
+    opacity: 0.3;
+    font-size: 1rem;
+    margin: 0 0.5rem;
+}
+
+.mood-quote p {
+    display: inline;
+    font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .mood-card {
+        padding: 1.5rem;
     }
-    .form-check:hover {
-        transform: scale(1.02);
+    
+    .mood-card-header h2 {
+        font-size: 1.6rem;
     }
-    .form-check input {
-        display: none;
+    
+    .mood-emoji {
+        font-size: 1.5rem;
+        min-width: 40px;
     }
-    .form-check input:checked + label {
-        font-weight: bold;
+    
+    .mood-text {
+        font-size: 1rem;
     }
-    .form-check label {
-        cursor: pointer;
-        margin: 0;
-        text-align: center;
-        color: white;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
     }
+    
+    .step-label {
+        font-size: 0.7rem;
+    }
+}
 </style>
 {% endblock %}
