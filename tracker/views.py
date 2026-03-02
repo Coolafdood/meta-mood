@@ -224,13 +224,10 @@ def step3_action(request):
                     notes = f"Custom reason: {custom_reason_text}\n{notes}"
                 custom_action_obj, _ = Action.objects.get_or_create(
                     text="Custom action",
-                    defaults={
-                        "category": "other",
-                        "is_generic": True
-                }
+                    defaults={"category": "other", "is_generic": True},
                 )
                 action = custom_action_obj
-             
+
             else:
                 action = Action.objects.get(id=int(action_id))
                 if is_custom_reason:
@@ -350,17 +347,16 @@ def dashboard(request):
         mood_distribution = []
         actions_feedback = []
 
-    # ============ FIXED FEEDBACK LOGIC ============
-    # Time threshold (20 seconds for testing)
+    # Time threshold for feedback eligibility (20s for testing)
     time_threshold_seconds = 20
-    
+
     # Look for entries that need feedback
     pending_feedback = MoodEntry.objects.filter(
         user=request.user,
         action__isnull=False,
         action_worked__isnull=True,
-    ).order_by('created_at')
-    
+    ).order_by("created_at")
+
     # Create feedback forms for eligible entries
     feedback_forms = []
     for candidate in pending_feedback:
@@ -370,7 +366,7 @@ def dashboard(request):
             feedback_forms.append({"entry": candidate, "form": form})
             if len(feedback_forms) >= 3:  # Limit to 3
                 break
-    
+
     has_feedback_pending = len(feedback_forms) > 0
 
     context = {
