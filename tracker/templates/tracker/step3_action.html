@@ -1,103 +1,678 @@
+<!-- tracker/templates/tracker/step3_action.html -->
 {% extends 'tracker/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="step-indicator">
-            <div class="step">1</div>
-            <div class="step">2</div>
-            <div class="step active">3</div>
+<div class="container">
+    <div class="auth-container" style="max-width: 600px;">
+        <!-- Floating background shapes -->
+        <div class="auth-shapes" style="opacity: 0.15;">
+            <div class="auth-shape auth-shape-1"></div>
+            <div class="auth-shape auth-shape-2"></div>
+            <div class="auth-shape auth-shape-3"></div>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator-wrapper">
+            <div class="step-indicator">
+                <!-- Step 1 - Completed -->
+                <div class="step-item">
+                    <div class="step-circle completed">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label completed-label">Mood</span>
+                </div>
+                <div class="step-line completed-line"></div>
+                
+                <!-- Step 2 - Completed -->
+                <div class="step-item">
+                    <div class="step-circle completed">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label completed-label">Drivers</span>
+                </div>
+                <div class="step-line completed-line"></div>
+                
+                <!-- Step 3 - Active -->
+                <div class="step-item">
+                    <div class="step-circle active">
+                        <span>3</span>
+                    </div>
+                    <span class="step-label active-label">Action</span>
+                </div>
+            </div>
         </div>
         
-        <div class="card">
-            <div class="card-header">
-                <h3 class="text-center">Step 3: {{ form.action.label }}</h3>
-            </div>
-            <div class="card-body">
-                {% if is_custom_reason %}
-                    <div class="alert alert-info">
-                        <strong>You said:</strong> {{ custom_reason_text }}
+        <!-- Main Card -->
+        <div class="action-card mood-{{ mood }}">
+            <div class="action-card-header">
+                <div class="mood-summary">
+                    <div class="mood-indicator">
+                        <span class="mood-emoji">
+                            {% if mood == 1 %}😭{% elif mood == 2 %}😞{% elif mood == 3 %}😐{% elif mood == 4 %}🙂{% elif mood == 5 %}😁{% endif %}
+                        </span>
+                        <span class="mood-text">
+                            {% if mood == 1 %}Terrible{% elif mood == 2 %}Bad{% elif mood == 3 %}Neutral{% elif mood == 4 %}Good{% elif mood == 5 %}Excellent{% endif %}
+                        </span>
                     </div>
-                {% endif %}
+                    
+                    {% if is_custom_reason %}
+                    <div class="reason-bubble">
+                        <i class="fas fa-quote-left"></i>
+                        <span>{{ custom_reason_text|truncatechars:50 }}</span>
+                        <i class="fas fa-quote-right"></i>
+                    </div>
+                    {% else %}
+                    <div class="reason-indicator">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Reason selected</span>
+                    </div>
+                    {% endif %}
+                </div>
                 
+                <h2>What can you do about it?</h2>
+                <p class="text-muted">Choose an action to help improve your mood</p>
+            </div>
+            
+            <div class="action-card-body">
                 <form method="post" id="actionForm">
                     {% csrf_token %}
                     
-                    {% for radio in form.action %}
-                        <div class="form-check action-option mood-{{ mood }}" onclick="handleActionSelect(this, '{{ radio.data.value }}')">
+                    <div class="action-options-grid">
+                        {% for radio in form.action %}
+                        <div class="action-option-card" onclick="handleActionSelect(this, '{{ radio.data.value }}')">
                             {{ radio.tag }}
-                            <label class="form-check-label w-100" for="{{ radio.id_for_label }}">
-                                {{ radio.choice_label }}
+                            <label for="{{ radio.id_for_label }}">
+                                <span class="action-icon">
+                                    {% if radio.data.value == 'walk' %}🚶
+                                    {% elif radio.data.value == 'water' %}💧
+                                    {% elif radio.data.value == 'breathe' %}🧘
+                                    {% elif radio.data.value == 'talk' %}💬
+                                    {% elif radio.data.value == 'journal' %}📝
+                                    {% elif radio.data.value == 'music' %}🎵
+                                    {% elif radio.data.value == 'tea' %}🍵
+                                    {% elif radio.data.value == 'custom' %}✨
+                                    {% else %}💫{% endif %}
+                                </span>
+                                <span class="action-text">{{ radio.choice_label }}</span>
+                                <span class="action-check"><i class="fas fa-check-circle"></i></span>
                             </label>
                         </div>
-                    {% endfor %}
-                    
-                    <div id="customActionField" style="display: none;" class="mt-3">
-                        {{ form.custom_action.label_tag }}
-                        {{ form.custom_action }}
+                        {% endfor %}
                     </div>
                     
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">Save Entry</button>
+                    <!-- Custom Action Field -->
+                    <div id="customActionField" class="custom-action-field" style="display: none;">
+                        <label for="{{ form.custom_action.id_for_label }}" class="custom-action-label">
+                            <i class="fas fa-pen"></i> Describe your custom action
+                        </label>
+                        {{ form.custom_action }}
+                        <small class="form-text text-muted">What would you like to do to feel better?</small>
+                    </div>
+                    
+                    <div class="action-actions">
+                        <button type="submit" class="btn-save" id="submitBtn" disabled>
+                            <i class="fas fa-save me-2"></i>
+                            <span class="btn-text">Save Entry & Set Reminder</span>
+                        </button>
+                        
+                        <a href="javascript:history.back()" class="btn-back">
+                            <i class="fas fa-arrow-left"></i> Back to Drivers
+                        </a>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Reminder Preview -->
+        <div class="reminder-preview">
+            <i class="fas fa-bell"></i>
+            <div class="reminder-text">
+                <strong>We'll remind you</strong> to check in after 1 hour to see how you're feeling
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .action-option {
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        transition: transform 0.2s;
-        cursor: pointer;
-        background-color: #e9ecef;
-    }
-    .action-option:hover {
-        transform: scale(1.02);
-        background-color: #dee2e6;
-    }
-    .action-option input {
-        display: none;
-    }
-    .action-option input:checked + label {
-        font-weight: bold;
-    }
-    .action-option label {
-        cursor: pointer;
-        margin: 0;
-        text-align: center;
-    }
-</style>
-
 <script>
 function handleActionSelect(element, value) {
-    // Uncheck all other radios
-    document.querySelectorAll('input[name="action"]').forEach(radio => {
-        radio.checked = false;
+    // Remove selected class from all options
+    document.querySelectorAll('.action-option-card').forEach(card => {
+        card.classList.remove('selected');
     });
     
-    // Check the selected radio
-    const radio = element.querySelector('input');
-    radio.checked = true;
+    // Add selected class to clicked card
+    element.classList.add('selected');
+    
+    // Check the radio button
+    const radio = element.querySelector('input[type="radio"]');
+    if (radio) {
+        radio.checked = true;
+    }
     
     // Show/hide custom action field
     const customField = document.getElementById('customActionField');
     if (value === 'custom') {
         customField.style.display = 'block';
+        // Add animation
+        customField.style.animation = 'none';
+        customField.offsetHeight;
+        customField.style.animation = 'slideDown 0.3s ease';
     } else {
         customField.style.display = 'none';
     }
+    
+    // Enable submit button
+    document.getElementById('submitBtn').disabled = false;
 }
 
 // Check if 'custom' is selected on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const customRadio = document.querySelector('input[value="custom"]');
-    if (customRadio && customRadio.checked) {
-        document.getElementById('customActionField').style.display = 'block';
+    const selectedRadio = document.querySelector('input[name="action"]:checked');
+    if (selectedRadio) {
+        const parentCard = selectedRadio.closest('.action-option-card');
+        if (parentCard) {
+            parentCard.classList.add('selected');
+            document.getElementById('submitBtn').disabled = false;
+            
+            if (selectedRadio.value === 'custom') {
+                document.getElementById('customActionField').style.display = 'block';
+            }
+        }
     }
 });
 </script>
+
+<style>
+/* Step Indicator - Reusing styles from step 2 */
+.step-indicator-wrapper {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 60px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    z-index: 2;
+}
+
+.step-circle {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border: 3px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #a0aec0;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.step-circle.completed {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    border-color: #48bb78;
+    color: white;
+}
+
+.step-circle.completed i {
+    font-size: 1.3rem;
+}
+
+.step-circle.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.step-line {
+    flex: 1;
+    height: 3px;
+    background: #e2e8f0;
+    margin: 0 0.5rem;
+    position: relative;
+    top: -12px;
+}
+
+.step-line.completed-line {
+    background: linear-gradient(90deg, #48bb78, #667eea);
+}
+
+.step-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a0aec0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.active-label {
+    color: #667eea !important;
+    font-weight: 700;
+}
+
+.completed-label {
+    color: #48bb78 !important;
+    font-weight: 700;
+}
+
+/* Action Card */
+.action-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 2.5rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Mood-based top borders */
+.action-card.mood-1::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #ff6b6b; 
+    z-index: 1;
+}
+.action-card.mood-2::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #ffa06b; 
+    z-index: 1;
+}
+.action-card.mood-3::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #ffd93d; 
+    z-index: 1;
+}
+.action-card.mood-4::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #6bcf7f; 
+    z-index: 1;
+}
+.action-card.mood-5::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #4a9eff; 
+    z-index: 1;
+}
+
+.action-card-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Mood Summary */
+.mood-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.mood-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.mood-emoji {
+    font-size: 1.5rem;
+}
+
+.mood-text {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.reason-bubble {
+    background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    color: #4a5568;
+    font-style: italic;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.reason-bubble i {
+    color: #667eea;
+    font-size: 0.8rem;
+    margin: 0 0.3rem;
+    opacity: 0.7;
+}
+
+.reason-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #48bb78;
+    font-size: 0.9rem;
+}
+
+.reason-indicator i {
+    font-size: 1rem;
+}
+
+.action-card-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2d3748 0%, #667eea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+/* Action Options Grid */
+.action-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.action-option-card {
+    cursor: pointer;
+    border-radius: 16px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    border: 2px solid #e2e8f0;
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-option-card:hover {
+    transform: translateY(-3px);
+    border-color: #667eea;
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.1);
+}
+
+.action-option-card.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.15);
+}
+
+.action-option-card input {
+    display: none;
+}
+
+.action-option-card label {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    margin: 0;
+    width: 100%;
+    position: relative;
+}
+
+.action-icon {
+    font-size: 1.8rem;
+    min-width: 40px;
+    text-align: center;
+}
+
+.action-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2d3748;
+    flex: 1;
+}
+
+.action-check {
+    color: #667eea;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.action-option-card.selected .action-check {
+    opacity: 1;
+}
+
+/* Custom Action Field */
+.custom-action-field {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: #f7fafc;
+    border-radius: 16px;
+    border-left: 4px solid #667eea;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-action-label {
+    display: block;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.custom-action-label i {
+    color: #667eea;
+    margin-right: 0.5rem;
+}
+
+.custom-action-field input,
+.custom-action-field textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.custom-action-field input:focus,
+.custom-action-field textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.custom-action-field .form-text {
+    margin-top: 0.5rem;
+    color: #718096;
+    font-size: 0.85rem;
+}
+
+/* Action Buttons */
+.action-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 10px 20px rgba(72, 187, 120, 0.2);
+    width: 100%;
+}
+
+.btn-save:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(72, 187, 120, 0.3);
+}
+
+.btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #cbd5e0;
+    box-shadow: none;
+}
+
+.btn-back {
+    background: transparent;
+    color: #718096;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-back:hover {
+    background: #f7fafc;
+    color: #667eea;
+    border-color: #667eea;
+    transform: translateX(-3px);
+}
+
+/* Reminder Preview */
+.reminder-preview {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-left: 4px solid #f59e0b;
+}
+
+.reminder-preview i {
+    color: #f59e0b;
+    font-size: 1.5rem;
+}
+
+.reminder-text {
+    color: #92400e;
+    font-size: 0.95rem;
+}
+
+.reminder-text strong {
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .action-card {
+        padding: 1.5rem;
+    }
+    
+    .action-card-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .action-options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-icon {
+        font-size: 1.5rem;
+        min-width: 35px;
+    }
+    
+    .action-text {
+        font-size: 0.95rem;
+    }
+    
+    .mood-indicator {
+        padding: 0.4rem 1rem;
+    }
+    
+    .mood-emoji {
+        font-size: 1.2rem;
+    }
+    
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+    
+    .step-circle.completed i {
+        font-size: 1.1rem;
+    }
+    
+    .step-label {
+        font-size: 0.7rem;
+    }
+    
+    .reminder-preview {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
 {% endblock %}
