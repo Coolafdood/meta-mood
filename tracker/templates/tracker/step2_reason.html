@@ -1,99 +1,624 @@
+<!-- tracker/templates/tracker/step2_reason.html -->
 {% extends 'tracker/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="step-indicator">
-            <div class="step">1</div>
-            <div class="step active">2</div>
-            <div class="step">3</div>
+<div class="container">
+    <div class="auth-container" style="max-width: 600px;">
+        <!-- Floating background shapes -->
+        <div class="auth-shapes" style="opacity: 0.15;">
+            <div class="auth-shape auth-shape-1"></div>
+            <div class="auth-shape auth-shape-2"></div>
+            <div class="auth-shape auth-shape-3"></div>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator-wrapper">
+            <div class="step-indicator">
+                <!-- Step 1 - Completed -->
+                <div class="step-item">
+                    <div class="step-circle completed">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label completed-label">Mood</span>
+                </div>
+                <div class="step-line completed-line"></div>
+                
+                <!-- Step 2 - Active -->
+                <div class="step-item">
+                    <div class="step-circle active">
+                        <span>2</span>
+                    </div>
+                    <span class="step-label active-label">Drivers</span>
+                </div>
+                <div class="step-line"></div>
+                
+                <!-- Step 3 - Pending -->
+                <div class="step-item">
+                    <div class="step-circle">
+                        <span>3</span>
+                    </div>
+                    <span class="step-label">Action</span>
+                </div>
+            </div>
         </div>
         
-        <div class="card">
-            <div class="card-header">
-                <h3 class="text-center">Step 2: Why do you feel this way?</h3>
+        <!-- Main Card -->
+        <div class="reason-card mood-{{ mood }}">
+            <div class="reason-card-header">
+                <div class="mood-indicator">
+                    <span class="mood-emoji">
+                        {% if mood == 1 %}😭{% elif mood == 2 %}😞{% elif mood == 3 %}😐{% elif mood == 4 %}🙂{% elif mood == 5 %}😁{% endif %}
+                    </span>
+                    <span class="mood-text">
+                        {% if mood == 1 %}Terrible{% elif mood == 2 %}Bad{% elif mood == 3 %}Neutral{% elif mood == 4 %}Good{% elif mood == 5 %}Excellent{% endif %}
+                    </span>
+                </div>
+                <h2>Why do you feel this way?</h2>
+                <p class="text-muted">Select the reason that best describes what's affecting your mood</p>
             </div>
-            <div class="card-body">
+            
+            <div class="reason-card-body">
                 <form method="post" id="reasonForm">
                     {% csrf_token %}
                     
-                    {% for radio in form.reason %}
-                        <div class="form-check reason-option mood-{{ mood }}" onclick="handleReasonSelect(this, '{{ radio.data.value }}')">
+                    <div class="reason-options-grid">
+                        {% for radio in form.reason %}
+                        <div class="reason-option-card" onclick="handleReasonSelect(this, '{{ radio.data.value }}')">
                             {{ radio.tag }}
-                            <label class="form-check-label w-100" for="{{ radio.id_for_label }}">
-                                {{ radio.choice_label }}
+                            <label for="{{ radio.id_for_label }}">
+                                <span class="reason-icon">
+                                    {% if radio.data.value == 'work' %}💼
+                                    {% elif radio.data.value == 'health' %}🏥
+                                    {% elif radio.data.value == 'relationships' %}❤️
+                                    {% elif radio.data.value == 'sleep' %}😴
+                                    {% elif radio.data.value == 'exercise' %}🏃
+                                    {% elif radio.data.value == 'weather' %}☀️
+                                    {% elif radio.data.value == 'food' %}🍔
+                                    {% elif radio.data.value == 'other' %}✨
+                                    {% else %}📌{% endif %}
+                                </span>
+                                <span class="reason-text">{{ radio.choice_label }}</span>
+                                <span class="reason-check"><i class="fas fa-check-circle"></i></span>
                             </label>
                         </div>
-                    {% endfor %}
-                    
-                    <div id="customReasonField" style="display: none;" class="mt-3">
-                        {{ form.custom_reason.label_tag }}
-                        {{ form.custom_reason }}
+                        {% endfor %}
                     </div>
                     
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary" id="submitBtn">Next</button>
+                    <!-- Custom Reason Field -->
+                    <div id="customReasonField" class="custom-reason-field" style="display: none;">
+                        <label for="{{ form.custom_reason.id_for_label }}" class="custom-reason-label">
+                            <i class="fas fa-pen"></i> Tell us more
+                        </label>
+                        {{ form.custom_reason }}
+                        <small class="form-text text-muted">Describe what's affecting your mood in your own words</small>
+                    </div>
+                    
+                    <div class="reason-actions">
+                        <button type="submit" class="btn-next" id="submitBtn" disabled>
+                            <span class="btn-text">Continue to Action Plan</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        
+                        <a href="{% url 'tracker:step1_mood' %}" class="btn-back">
+                            <i class="fas fa-arrow-left"></i> Back to Mood
+                        </a>
                     </div>
                 </form>
             </div>
         </div>
+
+        <!-- Progress Message -->
+        <div class="progress-message">
+            <i class="fas fa-info-circle"></i>
+            <p>Understanding your triggers helps us provide better recommendations</p>
+        </div>
     </div>
 </div>
 
-<style>
-    .reason-option {
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        transition: transform 0.2s;
-        cursor: pointer;
-    }
-    .reason-option:hover {
-        transform: scale(1.02);
-    }
-    .reason-option input {
-        display: none;
-    }
-    .reason-option input:checked + label {
-        font-weight: bold;
-    }
-    .reason-option label {
-        cursor: pointer;
-        margin: 0;
-        color: white;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    }
-    .mood-1, .mood-2 { background-color: #ff6b6b; }
-    .mood-3 { background-color: #ffd93d; }
-    .mood-4, .mood-5 { background-color: #6bcf7f; }
-</style>
-
 <script>
 function handleReasonSelect(element, value) {
-    // Uncheck all other radios
-    document.querySelectorAll('input[name="reason"]').forEach(radio => {
-        radio.checked = false;
+    // Remove selected class from all options
+    document.querySelectorAll('.reason-option-card').forEach(card => {
+        card.classList.remove('selected');
     });
     
-    // Check the selected radio
-    const radio = element.querySelector('input');
-    radio.checked = true;
+    // Add selected class to clicked card
+    element.classList.add('selected');
+    
+    // Check the radio button
+    const radio = element.querySelector('input[type="radio"]');
+    if (radio) {
+        radio.checked = true;
+    }
     
     // Show/hide custom reason field
     const customField = document.getElementById('customReasonField');
     if (value === 'other') {
         customField.style.display = 'block';
+        // Add animation
+        customField.style.animation = 'none';
+        customField.offsetHeight;
+        customField.style.animation = 'slideDown 0.3s ease';
     } else {
         customField.style.display = 'none';
     }
+    
+    // Enable submit button
+    document.getElementById('submitBtn').disabled = false;
 }
 
 // Check if 'other' is selected on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const otherRadio = document.querySelector('input[value="other"]');
-    if (otherRadio && otherRadio.checked) {
-        document.getElementById('customReasonField').style.display = 'block';
+    const selectedRadio = document.querySelector('input[name="reason"]:checked');
+    if (selectedRadio) {
+        const parentCard = selectedRadio.closest('.reason-option-card');
+        if (parentCard) {
+            parentCard.classList.add('selected');
+            document.getElementById('submitBtn').disabled = false;
+            
+            if (selectedRadio.value === 'other') {
+                document.getElementById('customReasonField').style.display = 'block';
+            }
+        }
     }
 });
 </script>
+
+<style>
+/* Step Indicator Styles */
+.step-indicator-wrapper {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 60px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    z-index: 2;
+}
+
+.step-circle {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border: 3px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #a0aec0;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+/* Completed step */
+.step-circle.completed {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    border-color: #48bb78;
+    color: white;
+}
+
+.step-circle.completed i {
+    font-size: 1.3rem;
+}
+
+/* Active step */
+.step-circle.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Step lines */
+.step-line {
+    flex: 1;
+    height: 3px;
+    background: #e2e8f0;
+    margin: 0 0.5rem;
+    position: relative;
+    top: -12px;
+}
+
+.step-line.completed-line {
+    background: linear-gradient(90deg, #48bb78, #667eea);
+}
+
+/* Step labels */
+.step-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a0aec0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.active-label {
+    color: #667eea !important;
+    font-weight: 700;
+}
+
+.completed-label {
+    color: #48bb78 !important;
+    font-weight: 700;
+}
+
+/* Reason Card */
+.reason-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 2.5rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Mood-based top borders */
+.reason-card.mood-1::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #ff6b6b; 
+    z-index: 1;
+}
+.reason-card.mood-2::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #ffa06b; 
+    z-index: 1;
+}
+.reason-card.mood-3::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #ffd93d; 
+    z-index: 1;
+}
+.reason-card.mood-4::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #6bcf7f; 
+    z-index: 1;
+}
+.reason-card.mood-5::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 5px; 
+    background: #4a9eff; 
+    z-index: 1;
+}
+
+.reason-card-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.mood-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.mood-emoji {
+    font-size: 1.5rem;
+}
+
+.mood-text {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.reason-card-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2d3748 0%, #667eea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+/* Reason Options Grid */
+.reason-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.reason-option-card {
+    cursor: pointer;
+    border-radius: 16px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    border: 2px solid #e2e8f0;
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.reason-option-card:hover {
+    transform: translateY(-3px);
+    border-color: #667eea;
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.1);
+}
+
+.reason-option-card.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.15);
+}
+
+.reason-option-card input {
+    display: none;
+}
+
+.reason-option-card label {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    margin: 0;
+    width: 100%;
+    position: relative;
+}
+
+.reason-icon {
+    font-size: 1.8rem;
+    min-width: 40px;
+    text-align: center;
+}
+
+.reason-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2d3748;
+    flex: 1;
+}
+
+.reason-check {
+    color: #667eea;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.reason-option-card.selected .reason-check {
+    opacity: 1;
+}
+
+/* Custom Reason Field */
+.custom-reason-field {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: #f7fafc;
+    border-radius: 16px;
+    border-left: 4px solid #667eea;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-reason-label {
+    display: block;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.custom-reason-label i {
+    color: #667eea;
+    margin-right: 0.5rem;
+}
+
+.custom-reason-field input,
+.custom-reason-field textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.custom-reason-field input:focus,
+.custom-reason-field textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.custom-reason-field .form-text {
+    margin-top: 0.5rem;
+    color: #718096;
+    font-size: 0.85rem;
+}
+
+/* Reason Actions */
+.reason-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+    width: 100%;
+}
+
+.btn-next:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #cbd5e0;
+    box-shadow: none;
+}
+
+.btn-next i {
+    transition: transform 0.3s ease;
+}
+
+.btn-next:not(:disabled):hover i {
+    transform: translateX(5px);
+}
+
+.btn-back {
+    background: transparent;
+    color: #718096;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-back:hover {
+    background: #f7fafc;
+    color: #667eea;
+    border-color: #667eea;
+    transform: translateX(-3px);
+}
+
+/* Progress Message */
+.progress-message {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #718096;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    backdrop-filter: blur(5px);
+}
+
+.progress-message i {
+    color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .reason-card {
+        padding: 1.5rem;
+    }
+    
+    .reason-card-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .reason-options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .reason-icon {
+        font-size: 1.5rem;
+        min-width: 35px;
+    }
+    
+    .reason-text {
+        font-size: 0.95rem;
+    }
+    
+    .mood-indicator {
+        padding: 0.4rem 1rem;
+    }
+    
+    .mood-emoji {
+        font-size: 1.2rem;
+    }
+    
+    /* Step indicator responsive */
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+    
+    .step-circle.completed i {
+        font-size: 1.1rem;
+    }
+    
+    .step-label {
+        font-size: 0.7rem;
+    }
+}
+</style>
 {% endblock %}
