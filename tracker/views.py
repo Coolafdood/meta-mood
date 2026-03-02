@@ -430,3 +430,8 @@ def delete_entry(request, entry_id):
         entry.delete()
         messages.success(request, "Entry deleted successfully.")
     return redirect("tracker:dashboard")
+
+
+def team(request):
+    """Meet the team page"""
+    return render(request, "tracker/team.html")
