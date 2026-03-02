@@ -1,3 +1,4 @@
+<!-- tracker/templates/tracker/dashboard.html -->
 {% extends 'tracker/base.html' %}
 {% load static %}
 
@@ -55,7 +56,7 @@
                     <div class="col-md-4">
                         <div class="feedback-stat">
                             <span class="feedback-label">Reason:</span>
-                            <span class="feedback-value">{{ item.entry.reason.text|truncatechars:30 }}</span>
+                            <span class="feedback-value">{{ item.entry.display_reason|truncatechars:30 }}</span>
                         </div>
                     </div>
                     {% endif %}
@@ -63,7 +64,7 @@
                     <div class="col-md-4">
                         <div class="feedback-stat">
                             <span class="feedback-label">Action:</span>
-                            <span class="feedback-value">{{ item.entry.action.text|truncatechars:30 }}</span>
+                            <span class="feedback-value">{{ item.entry.display_action|truncatechars:30 }}</span>
                         </div>
                     </div>
                     {% endif %}
@@ -93,7 +94,7 @@
         {% endfor %}
     {% endif %}
 
-    <!-- Overview Stats -->
+    <!-- Overview Stats - Redesigned with gradients -->
     <div class="row g-4 mb-4">
         <div class="col-md-4">
             <div class="stat-card">
@@ -280,22 +281,17 @@
                                     {{ entry.reason.get_category_display|truncatechars:15 }}
                                 </span>
                             {% else %}
-                                <span class="text-muted">—</span>
+                                <span class="category-tag">
+                                    <i class="fas fa-tag me-1"></i>
+                                    Custom
+                                </span>
                             {% endif %}
                         </td>
                         <td>
-                            {% if entry.reason %}
-                                <span title="{{ entry.reason.text }}">{{ entry.reason.text|truncatechars:50 }}</span>
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
+                            {{ entry.display_reason|truncatechars:50 }}
                         </td>
                         <td>
-                            {% if entry.action %}
-                                <span title="{{ entry.action.text }}">{{ entry.action.text|truncatechars:50 }}</span>
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
+                            {{ entry.display_action|truncatechars:50 }}
                         </td>
                         <td>
                             {% if entry.action_worked is True %}
@@ -355,14 +351,14 @@
                 <div class="mb-2">
                     <small class="text-muted d-block">Category & Reason:</small>
                     <span class="category-tag me-1">{{ entry.reason.get_category_display }}</span>
-                    <span class="small">{{ entry.reason.text|truncatechars:40 }}</span>
+                    <span class="small" title="{{ entry.display_reason }}">{{ entry.display_reason|truncatechars:40 }}</span>
                 </div>
                 {% endif %}
                 
                 {% if entry.action %}
                 <div class="mb-3">
                     <small class="text-muted d-block">Action taken:</small>
-                    <span class="small">{{ entry.action.text|truncatechars:40 }}</span>
+                    <span class="small" title="{{ entry.display_action }}">{{ entry.display_action|truncatechars:40 }}</span>
                 </div>
                 {% endif %}
 
