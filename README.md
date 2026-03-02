@@ -107,66 +107,16 @@ The project's Kanban Board can be viewd **[here](https://github.com/orgs/Coolafd
 
 ### Wireframes
 
-<details>
-<summary>View Wireframes</summary>
-
-<p>
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/home.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/home.png" width="250">
-  </a>
-  
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/about-page-Desktop.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/about-page-Desktop.png" width="250">
-  </a>
-
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/dashboard-Desktop.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/dashboard-Desktop.png" width="250">
-  </a>
-</p>
-
-<p>
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/dashboard-Mobile.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/dashboard-Mobile.png" width="250">
-  </a>
-
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/checkin-page-Mobile.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/checkin-page-Mobile.png" width="250">
-  </a>
-
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/insight-analytics-Desktop.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/insight-analytics-Desktop.png" width="250">
-  </a>
-</p>
-
-<p>
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/insight-analytics-Mobile.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/insight-analytics-Mobile.png" width="250">
-  </a>
-
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/login.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/login.png" width="250">
-  </a>
-
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/loginpage-mobile.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/loginpage-mobile.png" width="250">
-  </a>
-</p>
-
-<p>
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/Sign-Up-Page-Desktop.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/Sign-Up-Page-Desktop.png" width="250">
-  </a>
-
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/sign-up-Mobile.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/sign-up-Mobile.png" width="250">
-  </a>
-
-  <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/Password-reset-request-Desktop.png">
-    <img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/Password-reset-request-Desktop.png" width="250">
-  </a>
-</p>
-
-</details>
+| Page | Desktop | Mobile |
+|------|---------|--------|
+| Home | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/home.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/home.png" width="200"></a> | — |
+| About | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/about-page-Desktop.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/about-page-Desktop.png" width="200"></a> | — |
+| Dashboard | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/dashboard-Desktop.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/dashboard-Desktop.png" width="200"></a> | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/dashboard-Mobile.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/dashboard-Mobile.png" width="200"></a> |
+| Check-in | — | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/checkin-page-Mobile.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/checkin-page-Mobile.png" width="200"></a> |
+| Insights | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/insight-analytics-Desktop.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/insight-analytics-Desktop.png" width="200"></a> | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/insight-analytics-Mobile.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/insight-analytics-Mobile.png" width="200"></a> |
+| Login | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/login.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/login.png" width="200"></a> | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/loginpage-mobile.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/loginpage-mobile.png" width="200"></a> |
+| Sign Up | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/Sign-Up-Page-Desktop.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/Sign-Up-Page-Desktop.png" width="200"></a> | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/sign-up-Mobile.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/sign-up-Mobile.png" width="200"></a> |
+| Password Reset | <a href="https://github.com/Coolafdood/meta-mood/blob/main/docs/Password-reset-request-Desktop.png"><img src="https://github.com/Coolafdood/meta-mood/blob/main/docs/Password-reset-request-Desktop.png" width="200"></a> | — |
 
 ## App Logic
 
