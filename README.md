@@ -1,31 +1,3 @@
-## Setup Instructions
-
-1. Clone the repository
-2. Create virtual environment
-3. Install dependencies
-4. **Run migrations:** `python manage.py migrate`
-5. **Run seeds_data:** `python manage.py seed_data`
-6. **Run collectstatic** `python manage.py collectstatic`
-7. Start server: `python manage.py runserver`
-
-## When Pulling Updates related to database
-
-After any `git pull`, always run:
-python manage.py migrate
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # team1-Meta_Mood
 **[View the Live Project here](https://metamood-63b673a5590d.herokuapp.com/)**
 
@@ -258,11 +230,11 @@ The app helps users understand their emotional patterns and discover what actual
 | T11 | Feedback         | Yes feedback          | Click Yes                         | Saved            |  Pass  |
 | T12 | Feedback         | No feedback           | Click No                          | Saved            |  Pass  |
 | T13 | Navigation       | Step navigation       | Complete steps                    | Works correctly  |  Pass  |
-| T14 | Colours          | Mood colours          | View moods                        | Colours correct  |        |
-| T15 | Emojis           | Mood emojis           | View moods                        | Emojis visible   |        |
-| T16 | Mobile           | Responsive layout     | Open on phone                     | Layout works     |        |
-| T17 | 404 Page         | Invalid URL           | Go to wrong URL                   | 404 page shown   |        |
-| T18 | 500 Page         | Server error          | Trigger error                     | 500 page shown   |        |
+| T14 | Colours          | Mood colours          | View moods                        | Colours correct  |  Pass  |
+| T15 | Emojis           | Mood emojis           | View moods                        | Emojis visible   |  Pass  |
+| T16 | Mobile           | Responsive layout     | Open on phone                     | Layout works     |   Pass |
+| T17 | 404 Page         | Invalid URL           | Go to wrong URL                   | 404 page shown   |   Pass |
+| T18 | 500 Page         | Server error          | Trigger error                     | 500 page shown   |   Pass |
 | T19 | Empty Dashboard  | No entries            | Open dashboard                    | Message shown    |  Pass  |
 | T20 | Delete Entry     | Delete entry          | Click delete                      | Entry removed    |  Pass  |
 
@@ -393,3 +365,20 @@ The website was deployed to Heroku and can be found **[here](https://metamood-63
 - Scroll to the bottom and click 'Deploy Branch' and your project will be deployed!
 
 ## Maintenance & Updates
+
+### Planned Features
+
+We had big dreams for this project! Here's what we'd love to add when we have more time:
+
+**Interactive Analytics Dashboard**
+- Mood Over Time Charts - Line graphs showing emotional patterns and trends
+- Trigger Analysis - Pie charts visualising which categories affect your mood most
+- Action Effectiveness - Bar charts showing which strategies actually help (based on feedback)
+- Weekly/Monthly Comparisons - See how your mood changes over different time periods
+
+**Coming Soon Ideas**
+- Email/Daily Reminders - Gentle nudges to log your mood
+- Export Data - Download your mood history as CSV/PDF
+- Mood Predictions - Simple AI to predict mood based on patterns
+- Social Features - Share anonymised insights with friends (opt-in)
+- Mobile Responsiveness - Better experience on phones
