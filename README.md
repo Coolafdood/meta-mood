@@ -5,7 +5,8 @@
 3. Install dependencies
 4. **Run migrations:** `python manage.py migrate`
 5. **Run seeds_data:** `python manage.py seed_data`
-6. Start server: `python manage.py runserver`
+6. **Run collectstatic** `python manage.py collectstatic`
+7. Start server: `python manage.py runserver`
 
 ## When Pulling Updates related to database
 
@@ -26,7 +27,7 @@ python manage.py migrate
 
 
 # team1-Meta_Mood
-[View the Live Project here]()
+**[View the Live Project here](https://metamood-63b673a5590d.herokuapp.com/)**
 
 # Table of Content
 - [User Expeience](#user-experience)
@@ -41,8 +42,7 @@ python manage.py migrate
 - [Testing](#testing)
     - [Bugs](#bugs-known-issues--solutions)
     - [Unresolved Bugs](#unresolved-bugs)
-    - [Tesing User Stories](#testing-user-stories)
-    - [Manual Testing](#manual-testing)
+    - [Tesing User Stories & Manual Testing](#testing-user-stories--manual-testing)
     - [Automated Testing](#automated-testing)
     - [Accessibility](#accessibility)
 - [Deployment](#deployment)
@@ -101,7 +101,7 @@ By tracking moods, reasons, and actions over time, users can start to recognise 
 
 - As a user who never completed a cycle I want incomplete entries to remain in my history with partial data so that I still have record of the initial mood even without outcome
 
-The project's Kanban Board can be viewd [here](https://github.com/orgs/Coolafdood/projects/8/views/2)
+The project's Kanban Board can be viewd **[here](https://github.com/orgs/Coolafdood/projects/8/views/2)**
 
 ### Design Choices
 
@@ -166,136 +166,225 @@ The app helps users understand their emotional patterns and discover what actual
 
 ## Technologies Used
 
+**1. Languages:**
+- Python - the core programming language used to build the application.
+- HTML5 - the standard markup language for structuring content on the web.
+- CSS 
+- JavaScript - added interactivity and client-side behaviour.
+
+**2. Frameworks & Libraries:**
+- Django - the main web framework used to manage models, views, templates, authentication, and admin functionality.
+- Django Allauth - user authentication, signup, and login with social account support.
+
+**3. Database & Deployment:**
+- PostgreSQL - relational database used in production.
+- psycopg2 - PostgreSQL database adapter for Python/Django.
+- Gunicorn - Python WSGI HTTP server for running Django apps in production.
+- Whitenoise – serves static files efficiently in Django without extra servers.
+- dj-database-url – allows database configuration via environment variables (useful for deployment).
+- [Heroku](https://www.heroku.com/) - platform-as-a-service (PaaS) used to deploy, manage, and scale the live application.
+
+**Version Control:**
+- Git – version control system to track and manage code changes.
+- GitHub – remote repository hosting, project board, and collaboration tool.
+
+## Resources & Tools
+
+- [mermaidchart](https://www.mermaidchart.com/) to draw Entity-Relationship Diagram.
+- [Open AI](https://openai.com/chatgpt/overview/) to create / review the content for spelling, grammar and consistency; to ask for suggestions on how to solve certain problems.
+- [deepseek](https://www.deepseek.com/en) to solve and explain certain problems.
+
 ## Code
 
 ## Testing
 
 ### Bugs, Known Issues & Solutions
 
-#### Mood Label Mismatch
+1. Mood Label Mismatch
 **Problem:** Step 3 showed "What might help you feel better?" even for excellent moods, which felt inappropriate.
 
 **Solution:** Added dynamic labels based on mood value (1-5) with customized messages for each mood level.
 
-#### Overwhelming Number of Options
+2. Overwhelming Number of Options
 **Problem:** Users faced 20+ reasons/actions to choose from, causing decision fatigue.
 
 **Solution:** Implemented smart filtering that shows max 12 options (2 per category) with random selection for variety.
 
-#### Feedback Form Not Appearing
+3. Feedback Form Not Appearing
 **Problem:** Users never saw the follow-up question about whether actions helped.
 
 **Solution:** Fixed timing logic in dashboard view and ensured session data persists correctly between steps.
 
-#### Form Parameters Errors
+4. Form Parameters Errors
 **Problem:** `BaseForm.__init__() got an unexpected keyword argument` errors when passing custom querysets.
 
 **Solution:** Properly popped all custom parameters before calling `super().__init__()` in form classes.
 
+5. Feedback Form Not Showing for Old Entries
+**Problem:** Feedback form only appeared for the most recent entry. Making a new entry would hide previous feedback opportunities.
+
+**Fix:** Changed from session-based to database query that checks ALL entries needing feedback (action exists, no feedback yet, time passed).
+
+6. Custom Actions Not Trackable
+**Problem:** Custom actions ("Something else") were only saved in notes, not linked to an Action object. They didn't appear in tables and couldn't receive feedback.
+
+**Fix:** Created generic "Custom action" object and linked it to entries while preserving original text in notes.
+
+7. Custom Reason/Action Text Mix-up
+**Problem:** When users entered both custom reason AND custom action, both texts were saved in the same notes field, causing them to appear in both columns.
+
+**Fix:** Added model properties (display_reason, display_action) to properly extract and separate custom texts.
+
 ### Unresolved Bugs
 
-### Testing User Stories
+### Testing User Stories & Manual Testing
 
-### Manual Testing
+| ID  | Feature          | Test Description      | Steps                             | Expected Result  | Result |
+| --- | ---------------- | --------------------- | --------------------------------- | ---------------- | ------ |
+| T1  | Mood Selection   | User selects a mood   | Select mood → Click Next          | Next page loads  |  Pass  |
+| T2  | Mood Selection   | Mood is required      | Click Next without selecting mood | Nothing happens  |  Pass  |
+| T3  | Reason Selection | Reasons are displayed | Go to Step 2                      | Reasons visible  |  Pass  | 
+| T5  | Reason Selection | Other reason          | Select "Other"                    | Saved correctly  |  Pass  |
+| T6  | Action Selection | Actions displayed     | Go to Step 3                      | Actions visible  |  Pass  |
+| T7  | Action Selection | Select action         | Select action → Save              | Entry saved      |  Pass  |
+| T8  | Dashboard        | Entries visible       | Open dashboard                    | Entries shown    |  Pass  |
+| T9  | Dashboard        | New entry visible     | Add entry → Dashboard             | Entry visible    |    Pass|
+| T10 | Feedback         | Feedback question     | Wait → Return                     | Question visible |  Pass  |
+| T11 | Feedback         | Yes feedback          | Click Yes                         | Saved            |  Pass  |
+| T12 | Feedback         | No feedback           | Click No                          | Saved            |  Pass  |
+| T13 | Navigation       | Step navigation       | Complete steps                    | Works correctly  |  Pass  |
+| T14 | Colours          | Mood colours          | View moods                        | Colours correct  |        |
+| T15 | Emojis           | Mood emojis           | View moods                        | Emojis visible   |        |
+| T16 | Mobile           | Responsive layout     | Open on phone                     | Layout works     |        |
+| T17 | 404 Page         | Invalid URL           | Go to wrong URL                   | 404 page shown   |        |
+| T18 | 500 Page         | Server error          | Trigger error                     | 500 page shown   |        |
+| T19 | Empty Dashboard  | No entries            | Open dashboard                    | Message shown    |  Pass  |
+| T20 | Delete Entry     | Delete entry          | Click delete                      | Entry removed    |  Pass  |
+
 
 ### Automated Testing
 
+**Test Results**
+
+The project currently includes approximately 35 automated tests covering:
+
+- Models
+- Forms
+- Views
+- Statistics
+- Feedback
+
+All tests are passing successfully:
+
+1. test_models.py - Database Models **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_models.py)**
+
+| Test                              | What it Checks                                                |
+| --------------------------------- | ------------------------------------------------------------- |
+| `test_reason_creation`            | Reasons are created with correct fields (mood_type, category) |
+| `test_action_creation`            | Actions are created with correct fields                       |
+| `test_action_reason_relationship` | Many-to-many link between actions and reasons works           |
+| `test_mood_entry_creation`        | Mood entries save all fields correctly                        |
+| `test_mood_entry_str_method`      | String representation of mood entry works                     |
+| `test_helper_properties`          | `day_of_week`, `month`, `hour` properties work                |
+
+2. test_forms.py - Form Validation **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_forms.py)**
+
+| Test                                   | What it Checks                         |
+| -------------------------------------- | -------------------------------------- |
+| `test_step1_form_valid`                | Step 1 accepts valid mood (1–5)        |
+| `test_step1_form_invalid`              | Step 1 rejects invalid mood (e.g. 6)   |
+| `test_step2_form_positive_mood`        | Shows only positive reasons for mood 5 |
+| `test_step2_form_negative_mood`        | Shows only negative reasons for mood 1 |
+| `test_step2_form_neutral_mood`         | Shows only neutral reasons for mood 3  |
+| `test_step2_form_with_custom_queryset` | Form accepts custom reason list        |
+| `test_step3_form_for_positive_reason`  | Shows correct label for positive mood  |
+| `test_step3_form_for_negative_reason`  | Shows correct label for negative mood  |
+| `test_step3_form_custom_reason`        | Handles custom reasons correctly       |
+| `test_feedback_form`                   | Feedback form has yes/no options       |
+
+3. test_views.py – Page Loads & User Flow **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_views.py)**
+
+| Test                                  | What it Checks                            |
+| ------------------------------------- | ----------------------------------------- |
+| `test_index_view`                     | Landing page loads                        |
+| `test_index_view_anonymous`           | Landing page works for anonymous users    |
+| `test_step1_view_get`                 | Step 1 page loads with form               |
+| `test_step1_view_post`                | Step 1 form submits and sets session      |
+| `test_step2_view_redirect_if_no_mood` | Redirects to Step 1 if no mood in session |
+| `test_step2_view_with_mood`           | Step 2 loads when mood exists in session  |
+| `test_step2_view_post_reason`         | Step 2 saves reason to session            |
+| `test_step2_view_post_custom`         | Step 2 handles "Other" reason             |
+| `test_step3_view_with_valid_data`     | Complete flow creates MoodEntry           |
+
+4. test_statistics.py – Dashboard Calculations **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_statistics.py)**
+
+| Test                                   | What it Checks                                    |
+| -------------------------------------- | ------------------------------------------------- |
+| `test_total_entries_count`             | Counts total entries correctly                    |
+| `test_average_mood_calculation`        | Calculates average mood correctly                 |
+| `test_positive_percentage_calculation` | Calculates percentage of positive moods correctly |
+| `test_category_filtering_threshold`    | Only shows categories with enough entries         |
+| `test_top_reasons_ordering`            | Orders reasons by frequency                       |
+| `test_recent_entries_ordering`         | Shows newest entries first                        |
+
+5. test_feedback.py – Action Feedback **[click here](https://github.com/Coolafdood/meta-mood/blob/main/tracker/tests/test_feedback.py)**
+
+| Test                                  | What it Checks                            |
+| ------------------------------------- | ----------------------------------------- |
+| `test_feedback_not_shown_immediately` | Feedback form does not appear immediately |
+| `test_feedback_submission_yes`        | "Yes" feedback saves correctly            |
+| `test_feedback_submission_no`         | "No" feedback saves correctly             |
+| `test_feedback_only_once`             | Feedback cannot be submitted twice        |
+| `test_feedback_wrong_user`            | Users cannot submit feedback for others   |
+| `test_delete_entry`                   | Users can delete their own entries        |
+| `test_delete_entry_wrong_user`        | Users cannot delete others' entries       |
+
+**Running tests**
+
+To run all automated tests, use `python manage.py test tracker`
+
 ### Accessibility
+
+Accessibility was considered throughout the design and implementation of the application to ensure it is usable by a wide range of users.
+
+- **Semantic HTML** is used to provide meaningful structure for screen readers and assistive technologies.
+- **Responsive design** implemented with Tailwind CSS ensures the interface works across different screen sizes and devices.
+- **Sufficient colour contrast** is maintained between text, backgrounds, and interactive elements to improve readability.
+- **Clear visual hierarchy** using consistent headings, spacing, and font sizes helps users easily navigate content.
+- **Keyboard accessibility** is supported through standard HTML controls (links, buttons, forms) and visible focus states.
+- **Alternative text** is provided for animal images, with meaningful alt attributes based on animal names.
+- **Form inputs** include labels or accessible attributes (such as aria-label) to support screen reader users.
+- **Motion and effects** are kept subtle to avoid unnecessary visual distraction.
 
 ## Deployment
 
+The website was deployed to Heroku and can be found **[here](https://metamood-63b673a5590d.herokuapp.com/)**.
+
+- Heroku is a cloud platform that lets developers create, deploy, monitor and manage apps.
+- You will need a Heroku log-in to be able to deploy a website to Heroku.
+- Once you have logged into Heroku:
+- Click 'New' > 'Create new app'
+- Choose a unique name, choose your region and press 'Create app'
+- Click on 'Settings' and then 'Reveal Config Vars'
+- Add a key of 'DATABASE_URL' - the value will be the URL you were emailed when creating your database.
+- Add a key of 'SECRET_KEY' - the value will be any random secret key (google 'secret key generator' and use it to generate a random string of numbers, letters and characters)
+- In your terminal, type the code you will need to install project requirements:
+  - pip3 install gunicorn
+  - pip install whitenoise
+  - pip3 install -r requirements.txt
+  - pip3 freeze --local > requirements.txt
+- Create an 'env.py' file at the root directory which contains the following:
+  - import os
+  - os.environ["DATABASE_URL"]='CI database URL'
+  - os.environ["SECRET_KEY"]=" Your secret key"
+- Create a file at the root directory called Procfile. In this file enter: "web: gunicorn my_project.wsgi" (without the quotes)
+- Create a file at the root directory called runtime.txt. In this file enter your Python version (`python -V`)
+- In settings.py, set DEBUG to False.
+- YOU SHOULD ALWAYS SET DEBUG TO FALSE BEFORE DEPLOYING FOR SECURITY
+- Add ",'.herokuapp.com' " (without the double quotes) to the ALLOWED_HOSTS list in settings.py
+- Add, commit and push your code.
+- Go back to Heroku, click on the 'Deploy' tab.
+- Connect your project to GitHub.
+- Scroll to the bottom and click 'Deploy Branch' and your project will be deployed!
+
 ## Maintenance & Updates
-
-## Credits
-
-### Content
-
-### Media
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-A human-centred dashboard that visualises emotional wellbeing trends using interactive frontend storytelling.
-
-Problem Statement
-
-What human issue are you solving?
-
-Target Users
-
-Be specific:
-
-Students?
-
-NHS workers?
-
-Small businesses?
-
-Young adults?
-
-Local community?
-
-Core Features
-
-Frontend interaction
-
-Data insight
-
-Emotional UX
-
-Optional backend support
-
-Tech Stack
-
-Frontend:
-
-React / JS / HTML/CSS
-
-Data:
-
-Pandas
-
-Matplotlib / Plotly
-
-ML (if applicable)
-
-Backend (optional):
-
-Flask / Django / FastAPI
-
-Ethics & Data Responsibility
-
-This is important in this hackathon.
-Add:
-
-Data source
-
-Privacy considerations
-
-Bias mitigation
-
-Accessibility
-
-Project Structure
-
-Show folder layout clearly.
