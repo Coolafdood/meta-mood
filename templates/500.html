@@ -1,0 +1,64 @@
+{% extends 'tracker/base.html' %}
+{% load static %}
+
+{% block title %}500 - Server Error{% endblock %}
+
+{% block content %}
+<div class="dashboard-container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="text-center">
+        <!-- Animated emoji -->
+        <div class="display-1 mb-4" style="font-size: 6rem; animation: spin 4s ease-in-out infinite;">
+            😵‍💫
+        </div>
+        
+        <h1 class="display-4 fw-bold mb-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            500
+        </h1>
+        
+        <h2 class="h3 mb-3">Our servers need a mood boost!</h2>
+        
+        <p class="lead text-muted mb-4 mx-auto" style="max-width: 500px;">
+            Something went wrong on our end. Don't worry, it's not you - it's us! 
+            We're working on fixing this. 🛠️
+        </p>
+        
+        <div class="mb-4">
+            <i class="fas fa-tools text-danger opacity-50 me-2"></i>
+            <span class="text-muted">Internal server error</span>
+        </div>
+        
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Go Back
+            </a>
+           <div class="d-flex gap-3 justify-content-center flex-wrap">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'tracker:dashboard' %}" class="btn btn-primary">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Go to Dashboard
+                    </a>
+                {% endif %}
+                <a href="{% url 'tracker:index' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-2"></i>
+                    Back to Homepage
+                </a>
+            </div>
+        </div>
+        
+        <div class="mt-5 text-muted small">
+            <p>Error code: 500 | Team has been notified 📨</p>
+            <p class="mt-2">✨ Take a deep breath. This is just a temporary glitch! ✨</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes spin {
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        25% { transform: rotate(10deg) scale(1.1); }
+        50% { transform: rotate(0deg) scale(1); }
+        75% { transform: rotate(-10deg) scale(1.1); }
+    }
+</style>
+{% endblock %}
