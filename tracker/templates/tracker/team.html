@@ -1,0 +1,491 @@
+{% extends 'tracker/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="team-container">
+    <!-- Floating background shapes -->
+    <div class="auth-shapes" style="opacity: 0.15;">
+        <div class="auth-shape auth-shape-1"></div>
+        <div class="auth-shape auth-shape-2"></div>
+        <div class="auth-shape auth-shape-3"></div>
+    </div>
+
+    <!-- Team Header -->
+    <div class="team-header">
+        <div class="team-icon-wrapper">
+            <i class="fas fa-users"></i>
+        </div>
+        <h1>Meet the <span class="gradient-text">MetaMood</span> Team</h1>
+        <p class="team-subtitle">
+            We're a passionate group of developers, designers, Data analysts, and mental health advocates 
+            on a mission to help you understand and improve your emotional well-being.
+        </p>
+    </div>
+
+    <!-- Team Grid -->
+    <div class="team-grid">
+        <!-- Team Member 1 - Lead Developer -->
+        <div class="team-card">
+            <div class="team-card-inner">
+                <div class="team-image-wrapper">
+                    <div class="team-image">
+                        <img src="{% static 'images/dagmara.jpg' %}" alt="Dagmara Szproch" class="team-photo">
+                    </div>
+                    
+                </div>
+                <div class="team-info">
+                    <h3 class="team-name">Dagmara Szproch</h3>
+                    <p class="team-title">Full Stack Developer</p>
+                    <p class="team-bio">
+                        Passionate about creating intuitive apps that make a difference in people's lives. 
+                        Dagmara leads the technical architecture and development of MetaMode.
+                    </p>
+                    <div class="team-contributions">
+                        <span class="contribution-tag">
+                            <i class="fas fa-code"></i> Backend
+                        </span>
+                        <span class="contribution-tag">
+                            <i class="fas fa-database"></i> Database
+                        </span>
+                        <span class="contribution-tag">
+                            <i class="fas fa-shield-alt"></i> Security
+                        </span>
+                    </div>
+                    <div class="team-social">
+                        <a href="https://github.com/dagmara-szproch" class="social-link" target="_blank" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/dagmara-szproch-233511356" class="social-link" target="_blank" title="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Member 2 - UX/UI Designer -->
+        <div class="team-card">
+            <div class="team-card-inner">
+                <div class="team-image-wrapper">
+                    <div class="team-image">
+                        <img src="{% static 'images/jawahir.png' %}" alt="Jawahir Abdul Bari" class="team-photo">
+                    </div>
+                    
+                </div>
+                <div class="team-info">
+                    <h3 class="team-name">Jawahir Abdul Bari</h3>
+                    <p class="team-title">Full Stack Developer</p>
+                    <p class="team-bio">
+                        Jawahir creates beautiful, intuitive interfaces that make emotional tracking feel 
+                        natural and engaging. She focuses on user-centered design and accessibility.
+                    </p>
+                    <div class="team-contributions">
+                        <span class="contribution-tag">
+                            <i class="fas fa-paint-brush"></i> UI Design
+                        </span>
+                        <span class="contribution-tag">
+                            <i class="fas fa-mobile-alt"></i> Mobile
+                        </span>
+                        <span class="contribution-tag">
+                            <i class="fas fa-universal-access"></i> Accessibility
+                        </span>
+                    </div>
+                    <div class="team-social">
+                        <a href="https://github.com/Jawahir01" class="social-link" target="_blank" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/jawahir-abdul-bari-5981041a9/" class="social-link" target="_blank" title="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Member 3 - Data Scientist -->
+        <div class="team-card">
+            <div class="team-card-inner">
+                <div class="team-image-wrapper">
+                    <div class="team-image">
+                        <img src="{% static 'images/mitesh.jpg' %}" alt="Mitesh Kumar" class="team-photo">
+                    </div>
+                    
+                </div>
+                <div class="team-info">
+                    <h3 class="team-name">Mitesh Kumar</h3>
+                    <p class="team-title">Data Analyst</p>
+                    <p class="team-bio">
+                        Mitesh builds the analytics engine that powers your mood insights. 
+                        He specializes in pattern recognition and predictive modeling for mental wellness.
+                    </p>
+                    <div class="team-contributions">
+                        <span class="contribution-tag">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </span>
+                        <span class="contribution-tag">
+                            <i class="fas fa-brain"></i> ML Models
+                        </span>
+                        <span class="contribution-tag">
+                            <i class="fas fa-chart-pie"></i> Insights
+                        </span>
+                    </div>
+                    <div class="team-social">
+                        <a href="https://github.com/miteshbkumar-ship-it" class="social-link" target="_blank" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/mitesh-k" class="social-link" target="_blank" title="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Member 4 - Full Stack Developer -->
+        <div class="team-card">
+            <div class="team-card-inner">
+                <div class="team-image-wrapper">
+                    <div class="team-image">
+                        <img src="{% static 'images/Chaz.jpg' %}" alt="Chaz Eldred" class="team-photo">
+                    </div>
+                    
+                </div>
+                <div class="team-info">
+                    <h3 class="team-name">Chaz Eldred</h3>
+                    <p class="team-title">Full Stack Developer</p>
+                    <p class="team-bio">
+                        Chaz builds the user interface and backend systems that make MetaMode easy to use. 
+                        He ensures a seamless experience across all devices and platforms.
+                    </p>
+                    <div class="team-contributions">
+                        <span class="contribution-tag">
+                            <i class="fas fa-heart"></i> Backend
+                        </span>
+                        <span class="contribution-tag">
+                            <i class="fas fa-flask"></i> Research
+                        </span>
+                        <span class="contribution-tag">
+                            <i class="fas fa-hand-holding-heart"></i> Support
+                        </span>
+                    </div>
+                    <div class="team-social">
+                        <a href="https://github.com/chazeldred55-code" class="social-link" target="_blank" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/chaz-eldred-20b0a4262/" class="social-link" target="_blank" title="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Us Section -->
+    <div class="join-section">
+        <div class="join-content">
+            <h3>Want to contribute?</h3>
+            <p>MetaMood is open source! Check out our GitHub repository to get involved.</p>
+            <a href="https://github.com/Coolafdood/meta-mood" class="btn-primary-gradient">
+                <i class="fab fa-github me-2"></i>Star on GitHub
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Team Page Specific Styles */
+.team-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    position: relative;
+    min-height: calc(100vh - 200px);
+}
+
+/* Team Header */
+.team-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+.team-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    border: 3px solid rgba(102, 126, 234, 0.2);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.team-icon-wrapper i {
+    font-size: 3rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.team-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: #2d3748;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.team-subtitle {
+    max-width: 700px;
+    margin: 0 auto;
+    color: #718096;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Team Grid */
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-bottom: 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Team Card */
+.team-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 300% 100%;
+    animation: gradientMove 5s ease infinite;
+}
+
+.team-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 30px 60px rgba(102, 126, 234, 0.2);
+}
+
+.team-card-inner {
+    padding: 2rem;
+}
+
+/* Team Image */
+.team-image-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.team-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto;
+    border: 4px solid white;
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.team-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.team-card:hover .team-photo {
+    transform: scale(1.1);
+}
+
+
+/* Team Info */
+.team-info {
+    text-align: center;
+}
+
+.team-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.25rem;
+}
+
+.team-title {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.team-bio {
+    color: #718096;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* Contribution Tags */
+.team-contributions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.contribution-tag {
+    background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    color: #4a5568;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.contribution-tag i {
+    color: #667eea;
+    font-size: 0.7rem;
+}
+
+/* Social Links */
+.team-social {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.team-social .social-link {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #667eea;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    text-decoration: none;
+}
+
+.team-social .social-link:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    border-color: transparent;
+}
+
+/* Join Section */
+.join-section {
+    text-align: center;
+    padding: 3rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 30px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.join-content h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.join-content p {
+    color: #718096;
+    margin-bottom: 1.5rem;
+}
+
+.btn-primary-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+}
+
+.btn-primary-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .team-header h1 {
+        font-size: 2.2rem;
+    }
+    
+    .join-section {
+        padding: 2rem;
+    }
+    
+    .join-content h3 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .team-container {
+        padding: 1rem;
+    }
+    
+    .team-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+}
+</style>
+{% endblock %}
